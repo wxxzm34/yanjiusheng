@@ -1,0 +1,4 @@
+{
+  "desc": "烟酒生",
+  "rules": [{ "action": "allow", "page": "*" }]
+}

@@ -1,0 +1,22 @@
+.label {
+  margin-bottom: 12rpx;
+  color: #7a6558;
+}
+
+.chips {
+  display: flex;
+  gap: 12rpx;
+}
+
+.chip {
+  flex: 1;
+  text-align: center;
+  padding: 18rpx 0;
+  border-radius: 24rpx;
+  background: #fff;
+}
+
+.chip.on {
+  background: #ff5a36;
+  color: #fffaf6;
+}

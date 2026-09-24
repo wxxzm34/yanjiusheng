@@ -1,0 +1,5 @@
+.ops {
+  display: flex;
+  gap: 20rpx;
+  color: #ff5a36;
+}

@@ -1,0 +1,10 @@
+.count {
+  font-size: 72rpx;
+  font-weight: 700;
+  margin: 8rpx 0;
+}
+
+.link {
+  margin-top: 12rpx;
+  text-decoration: underline;
+}

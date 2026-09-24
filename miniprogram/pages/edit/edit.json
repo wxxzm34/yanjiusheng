@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "改一条",
+  "usingComponents": {
+    "mood-picker": "/components/mood-picker/mood-picker"
+  }
+}

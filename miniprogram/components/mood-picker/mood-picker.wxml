@@ -1,0 +1,12 @@
+<view>
+  <view class="label">{{label}}</view>
+  <view class="chips">
+    <view
+      wx:for="{{moods}}"
+      wx:key="*this"
+      class="chip {{value === item ? 'on' : ''}}"
+      data-mood="{{item}}"
+      bindtap="pick"
+    >{{item}}</view>
+  </view>
+</view>

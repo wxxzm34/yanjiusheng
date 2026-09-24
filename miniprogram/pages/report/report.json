@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "报告",
+  "usingComponents": {
+    "tab-bar": "/components/tabbar/tabbar"
+  }
+}

@@ -1,0 +1,124 @@
+page {
+  background: #fff8f1;
+  color: #2b2118;
+  font-size: 28rpx;
+  box-sizing: border-box;
+}
+
+.wrap {
+  padding: 32rpx 32rpx 180rpx;
+}
+
+.h1 {
+  font-size: 56rpx;
+  font-weight: 700;
+}
+
+.muted {
+  color: #7a6558;
+  line-height: 1.6;
+}
+
+.card {
+  background: rgba(255, 250, 246, 0.94);
+  border-radius: 32rpx;
+  padding: 28rpx;
+  margin-top: 24rpx;
+}
+
+.btn {
+  margin-top: 16rpx;
+  border-radius: 999rpx;
+  font-size: 32rpx;
+}
+
+.btn-line {
+  background: #fff;
+  color: #2b2118;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16rpx;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid rgba(43, 33, 24, 0.08);
+}
+
+.chips {
+  display: flex;
+  gap: 12rpx;
+  flex-wrap: wrap;
+}
+
+.chip {
+  padding: 12rpx 22rpx;
+  border-radius: 999rpx;
+  background: #fff;
+  border: 1rpx solid rgba(43, 33, 24, 0.08);
+}
+
+.chip.on {
+  background: #ff5a36;
+  color: #fffaf6;
+  border-color: transparent;
+}
+
+.bubble {
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 20rpx;
+  line-height: 1.5;
+  box-shadow: 0 8rpx 24rpx rgba(43, 33, 24, 0.08);
+}
+
+.stage {
+  position: relative;
+  height: 280rpx;
+  margin-top: 16rpx;
+}
+
+.hero,
+.user {
+  position: absolute;
+  bottom: 0;
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 60rpx 60rpx 28rpx 28rpx;
+}
+
+.hero {
+  left: 24rpx;
+}
+
+.user {
+  right: 24rpx;
+  background: #ef8354;
+}
+
+.beam {
+  position: absolute;
+  left: 140rpx;
+  right: 150rpx;
+  bottom: 48rpx;
+  height: 16rpx;
+  border-radius: 999rpx;
+  transform-origin: left center;
+  animation: beam 0.45s ease-out;
+}
+
+@keyframes beam {
+  from { transform: scaleX(0.1); }
+  to { transform: scaleX(1); }
+}
+
+.skip {
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-size: 24rpx;
+  background: #fff;
+  border-radius: 999rpx;
+  padding: 8rpx 18rpx;
+}

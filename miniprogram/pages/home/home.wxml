@@ -1,0 +1,37 @@
+<view class="wrap" style="background: {{bg.from}};">
+  <view class="h1">烟酒生</view>
+  <view class="muted">{{greeting}} · {{skin.name}} · {{bg.name}}</view>
+
+  <view class="stage" wx:if="{{gag}}">
+    <view class="bubble">{{gagText}}</view>
+    <view class="hero" style="background: {{skin.heroBody}};"></view>
+    <view class="beam" style="background: {{skin.laser}};"></view>
+    <view class="user"></view>
+    <view class="skip" bindtap="skipGag">跳过</view>
+  </view>
+
+  <view class="card">
+    <view class="muted">今天</view>
+    <view class="count">{{smokeCount}} 支烟</view>
+    <view class="muted">{{drinkCount ? '还有 ' + drinkCount + ' 杯酒' : '酒还没记'}}</view>
+    <mood-picker label="{{linkFresh ? '正在改刚才那支的心情' : '先选心情也行，不选直接记'}}" value="{{draftMood}}" bind:change="onMood" />
+    <view wx:if="{{linkFresh}}" class="link" bindtap="freezeMood">刚才那支就这样</view>
+    <button class="btn" style="background: {{skin.accent}}; color: #fff;" bindtap="logSmoke">记一支</button>
+    <button class="btn btn-line" bindtap="goDrink">记一杯</button>
+  </view>
+
+  <view class="card" wx:if="{{today.length === 0}}">
+    <view class="h1" style="font-size: 40rpx;">今天还是空白的</view>
+    <view class="muted">点上面记一支，或者先记一杯。</view>
+    <button class="btn btn-line" bindtap="loadSample">试试示例</button>
+  </view>
+
+  <view class="card" wx:else>
+    <view class="row" wx:for="{{today}}" wx:key="id">
+      <text>{{item.timeText}} · {{item.title}}</text>
+      <text>{{item.moodText}}</text>
+    </view>
+  </view>
+  <button class="btn btn-line" bindtap="shareToday">分享今天</button>
+  <tab-bar current="home" />
+</view>

@@ -1,0 +1,6 @@
+<view class="bar">
+  <view class="item {{current === 'home' ? 'on' : ''}}" data-url="/pages/home/home" bindtap="go">今天</view>
+  <view class="item {{current === 'history' ? 'on' : ''}}" data-url="/pages/history/history" bindtap="go">记录</view>
+  <view class="item {{current === 'report' ? 'on' : ''}}" data-url="/pages/report/report" bindtap="go">报告</view>
+  <view class="item {{current === 'shop' ? 'on' : ''}}" data-url="/pages/shop/shop" bindtap="go">装扮</view>
+</view>

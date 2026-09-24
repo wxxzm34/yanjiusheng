@@ -1,0 +1,18 @@
+{
+  "appid": "touristappid",
+  "projectname": "yanjiusheng",
+  "description": "烟酒生：记下每天的烟和酒",
+  "compileType": "miniprogram",
+  "libVersion": "3.5.5",
+  "setting": {
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "minified": false,
+    "urlCheck": false
+  },
+  "packOptions": {
+    "ignore": [],
+    "include": []
+  }
+}

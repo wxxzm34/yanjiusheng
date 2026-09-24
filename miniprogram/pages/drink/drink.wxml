@@ -1,0 +1,19 @@
+<view class="wrap">
+  <view class="h1">记一杯</view>
+  <view class="muted">种类要选，心情和地点随便。</view>
+  <view class="chips" style="margin-top: 24rpx;">
+    <view
+      wx:for="{{types}}"
+      wx:key="*this"
+      class="chip {{drinkType === item ? 'on' : ''}}"
+      data-type="{{item}}"
+      bindtap="pickType"
+    >{{item}}</view>
+  </view>
+  <input wx:if="{{drinkType === '其他'}}" class="field" placeholder="这杯叫什么" maxlength="12" value="{{drinkLabel}}" bindinput="onLabel" />
+  <view class="card">
+    <mood-picker label="这杯的心情" value="{{mood}}" bind:change="onMood" />
+  </view>
+  <input class="field" placeholder="在哪儿喝的，可以不填" maxlength="24" value="{{location}}" bindinput="onLocation" />
+  <button class="btn" bindtap="saveDrink">记下来</button>
+</view>

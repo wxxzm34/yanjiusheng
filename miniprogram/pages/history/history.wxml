@@ -1,0 +1,25 @@
+<view class="wrap">
+  <view class="h1">记录</view>
+  <view class="muted">今天和更早的都在这儿。支数从记录里数出来。</view>
+  <view wx:if="{{groups.length === 0}}" class="card">
+    <view class="h1" style="font-size: 40rpx;">还没有记录</view>
+    <view class="muted">抽过、喝过，都可以轻轻记一笔。</view>
+  </view>
+  <block wx:for="{{groups}}" wx:key="day">
+    <view class="card">
+      <view>{{item.label}} · {{item.smokes}} 支烟 · {{item.drinks}} 杯酒</view>
+      <view class="row" wx:for="{{item.entries}}" wx:for-item="entry" wx:key="id">
+        <view>
+          <view>{{entry.timeText}} · {{entry.title}}</view>
+          <view class="muted">{{entry.place}} · {{entry.moodText}}</view>
+        </view>
+        <view class="ops">
+          <text data-id="{{entry.id}}" bindtap="edit">改</text>
+          <text data-id="{{entry.id}}" bindtap="remove">删</text>
+        </view>
+      </view>
+    </view>
+  </block>
+  <button wx:if="{{groups.length}}" class="btn btn-line" bindtap="clearAll">清空记录</button>
+  <tab-bar current="history" />
+</view>

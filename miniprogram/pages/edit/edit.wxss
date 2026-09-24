@@ -1,0 +1,6 @@
+.field {
+  margin-top: 20rpx;
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 20rpx;
+}

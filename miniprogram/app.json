@@ -1,0 +1,19 @@
+{
+  "pages": [
+    "pages/home/home",
+    "pages/drink/drink",
+    "pages/history/history",
+    "pages/edit/edit",
+    "pages/report/report",
+    "pages/shop/shop"
+  ],
+  "window": {
+    "navigationBarTitleText": "烟酒生",
+    "navigationBarBackgroundColor": "#ff5a36",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#fff8f1",
+    "backgroundTextStyle": "dark"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

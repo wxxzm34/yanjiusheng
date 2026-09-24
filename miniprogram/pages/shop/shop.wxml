@@ -1,0 +1,28 @@
+<view class="wrap">
+  <view class="h1">装扮</view>
+  <view class="muted">下载只存在这台手机里。正在用 {{skin.name}} · {{bg.name}}</view>
+  <view class="card" wx:for="{{backgrounds}}" wx:key="id" style="background: {{item.from}};">
+    <view>{{item.name}}</view>
+    <view class="muted">{{item.blurb}}</view>
+    <button
+      class="btn btn-line"
+      data-id="{{item.id}}"
+      data-kind="bg"
+      bindtap="act"
+    >{{item.active ? '使用中' : item.unlocked ? '使用' : item.pending ? '下载中…' : '下载'}}</button>
+  </view>
+  <view class="card" wx:for="{{skins}}" wx:key="id">
+    <view class="swatch" style="background: {{item.heroBody}};"></view>
+    <view>{{item.name}}</view>
+    <view class="muted">{{item.blurb}}</view>
+    <button class="btn btn-line" data-id="{{item.id}}" data-kind="skin" bindtap="act">
+      {{item.active ? '使用中' : item.unlocked ? '使用' : item.pending ? '下载中…' : '下载'}}
+    </button>
+  </view>
+  <view class="card">
+    <view>小本本</view>
+    <button class="btn btn-line" bindtap="sample">试试示例</button>
+    <button class="btn btn-line" bindtap="clearAll">清空记录</button>
+  </view>
+  <tab-bar current="shop" />
+</view>

@@ -1,0 +1,6 @@
+.swatch {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 40rpx;
+  margin-bottom: 12rpx;
+}

@@ -1,0 +1,19 @@
+.bars {
+  display: flex;
+  align-items: flex-end;
+  height: 160rpx;
+  gap: 2rpx;
+}
+
+.col {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  height: 140rpx;
+}
+
+.bar {
+  width: 100%;
+  background: #ff5a36;
+  border-radius: 4rpx 4rpx 0 0;
+}
