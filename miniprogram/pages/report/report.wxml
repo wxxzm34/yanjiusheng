@@ -3,48 +3,28 @@
     <view class="h1">报告</view>
     <button size="mini" bindtap="shareCurrent">分享</button>
   </view>
-  <view class="muted">打开就是这个月、这一年。</view>
-  <view class="chips" style="margin-top: 20rpx;">
-    <view class="chip {{tab === 'month' ? 'on' : ''}}" data-tab="month" bindtap="switchTab">月报</view>
-    <view class="chip {{tab === 'year' ? 'on' : ''}}" data-tab="year" bindtap="switchTab">年报</view>
+  <view class="chips ranges">
+    <view
+      wx:for="{{ranges}}"
+      wx:key="id"
+      class="chip {{range === item.id ? 'on' : ''}}"
+      data-range="{{item.id}}"
+      bindtap="switchRange"
+    >{{item.label}}</view>
   </view>
 
-  <view wx:if="{{tab === 'month'}}">
-    <picker wx:if="{{monthLabels.length}}" mode="selector" range="{{monthLabels}}" value="{{monthIndex}}" bindchange="onMonth">
-      <view class="card">看看 {{monthLabels[monthIndex]}}</view>
-    </picker>
-    <view class="h1" style="font-size: 40rpx; margin-top: 20rpx;">{{monthTitle}}</view>
-    <view wx:if="{{monthEmpty}}" class="card">
-      <view>这个月还没有留下痕迹。</view>
-      <view class="muted">去记一笔，月报会自己长出来。</view>
+  <view wx:if="{{range !== 'year'}}" class="chart-card">
+    <ec-canvas id="day-chart" canvas-id="day-chart" ec="{{dayEc}}"></ec-canvas>
+  </view>
+  <block wx:else>
+    <view class="chart-card year">
+      <ec-canvas id="year-smoke" canvas-id="year-smoke" ec="{{smokeEc}}"></ec-canvas>
     </view>
-    <block wx:else>
-      <view class="card">烟 {{monthSummary.smokes}} 支 · 酒 {{monthSummary.drinks}} 杯</view>
-      <view class="card">
-        <view wx:for="{{monthDrinks}}" wx:key="type">{{item.type}} {{item.count}}</view>
-        <view class="muted">{{monthMood}}</view>
-      </view>
-      <view class="card bars">
-        <view wx:for="{{days}}" wx:key="day" class="col">
-          <view class="bar" style="height: {{item.height}}rpx;"></view>
-        </view>
-      </view>
-    </block>
-  </view>
+    <view class="chart-card year">
+      <ec-canvas id="year-drink" canvas-id="year-drink" ec="{{drinkEc}}"></ec-canvas>
+    </view>
+  </block>
 
-  <view wx:else>
-    <picker wx:if="{{yearLabels.length}}" mode="selector" range="{{yearLabels}}" value="{{yearIndex}}" bindchange="onYear">
-      <view class="card">看看 {{yearLabels[yearIndex]}}</view>
-    </picker>
-    <view class="h1" style="font-size: 40rpx; margin-top: 20rpx;">{{yearTitle}}</view>
-    <view wx:if="{{yearEmpty}}" class="card">这一年还是空的。</view>
-    <block wx:else>
-      <view class="card">烟 {{yearSummary.smokes}} 支 · 酒 {{yearSummary.drinks}} 杯</view>
-      <view class="card">
-        <view wx:for="{{yearMonths}}" wx:key="month">{{item.month}}月 烟{{item.smokes}} 酒{{item.drinks}}</view>
-      </view>
-      <view class="card muted">{{yearMood}}</view>
-    </block>
-  </view>
+  <view class="card summary">{{summaryText}}</view>
   <tab-bar current="report" />
 </view>

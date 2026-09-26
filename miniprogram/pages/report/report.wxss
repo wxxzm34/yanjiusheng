@@ -1,19 +1,30 @@
-.bars {
-  display: flex;
-  align-items: flex-end;
-  height: 160rpx;
-  gap: 2rpx;
+.ranges {
+  margin-top: 20rpx;
 }
 
-.col {
-  flex: 1;
-  display: flex;
-  align-items: flex-end;
-  height: 140rpx;
+.ranges .chip {
+  padding: 12rpx 18rpx;
+  font-size: 26rpx;
 }
 
-.bar {
+.chart-card {
+  margin-top: 24rpx;
+  height: 480rpx;
+  background: rgba(255, 250, 246, 0.94);
+  border-radius: 32rpx;
+  overflow: hidden;
+}
+
+.chart-card.year {
+  height: 420rpx;
+}
+
+.chart-card ec-canvas {
   width: 100%;
-  background: #ff5a36;
-  border-radius: 4rpx 4rpx 0 0;
+  height: 100%;
+}
+
+.summary {
+  font-size: 30rpx;
+  line-height: 1.6;
 }

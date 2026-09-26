@@ -1,133 +1,122 @@
+const echarts = require("../../ec-canvas/echarts");
 const { load } = require("../../utils/storage");
 const { paintChrome } = require("../../utils/packs");
+const { summarize, shareText } = require("../../utils/stats");
 const {
-  filterMonth,
-  filterYear,
-  listMonths,
-  listYears,
-  summarize,
-  daySeries,
-  monthSeries,
-  shareText,
-} = require("../../utils/stats");
+  rangeSeries,
+  entryInRange,
+  summaryLine,
+  dayLineOption,
+  yearSmokeOption,
+  yearDrinkOption,
+} = require("./chart-options");
 
-function moodLine(summary) {
-  const parts = ["无聊", "开心", "难过"].filter((mood) => summary.moods[mood] > 0).map((mood) => `${mood} ${summary.moods[mood]}`);
-  if (summary.unset) parts.push(`未选 ${summary.unset}`);
-  return parts.join(" · ") || "心情还没选";
+function shareTitle(range, now) {
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1;
+  if (range === "year") return `${year}年`;
+  if (range === "month") return `${year}年${month}月`;
+  if (range === "d7") return "最近 7 天";
+  return "最近 30 天";
+}
+
+function mountChart(canvas, width, height, dpr, option) {
+  const chart = echarts.init(canvas, null, {
+    width,
+    height,
+    devicePixelRatio: dpr,
+  });
+  canvas.setChart(chart);
+  chart.setOption(option);
+  return chart;
 }
 
 Page({
   data: {
-    tab: "month",
-    monthLabels: [],
-    monthIndex: 0,
-    monthTitle: "",
-    monthEmpty: true,
-    monthSummary: { smokes: 0, drinks: 0 },
-    monthDrinks: [],
-    monthMood: "",
-    days: [],
-    yearLabels: [],
-    yearIndex: 0,
-    yearTitle: "",
-    yearEmpty: true,
-    yearSummary: { smokes: 0, drinks: 0 },
-    yearMonths: [],
-    yearMood: "",
+    range: "month",
+    ranges: [
+      { id: "month", label: "本月" },
+      { id: "year", label: "本年" },
+      { id: "d7", label: "最近 7 天" },
+      { id: "d30", label: "最近 30 天" },
+    ],
+    summaryText: "本月共抽烟 0 根，喝酒 0 两/杯",
+    dayEc: { lazyLoad: true },
+    smokeEc: { lazyLoad: true },
+    drinkEc: { lazyLoad: true },
+  },
+  onLoad() {
+    this.entries = [];
+    this.series = null;
+    this.charts = {};
+    this.pending = {};
+    this.latest = {};
+    this.viewReady = false;
   },
   onShow() {
-    this.paint();
-  },
-  paint() {
     const data = load();
     paintChrome(data);
-    const now = new Date();
-    const months = listMonths(data.entries);
-    const years = listYears(data.entries);
-    const monthLabels = months.map((item) => item.label);
-    let monthIndex = months.findIndex((item) => item.year === now.getFullYear() && item.month === now.getMonth() + 1);
-    if (monthIndex < 0) monthIndex = 0;
-    const yearLabels = years.map((year) => `${year}年`);
-    let yearIndex = years.indexOf(now.getFullYear());
-    if (yearIndex < 0) yearIndex = 0;
-    this.setData({
-      monthLabels,
-      monthIndex: months.length ? monthIndex : 0,
-      yearLabels,
-      yearIndex: years.length ? yearIndex : 0,
+    this.entries = data.entries || [];
+    this.refresh();
+  },
+  onReady() {
+    this.viewReady = true;
+    this.paintCharts();
+  },
+  refresh() {
+    const series = rangeSeries(this.entries, this.data.range, new Date());
+    this.series = series;
+    this.setData(
+      { summaryText: summaryLine(this.data.range, series.smokeTotal, series.drinkTotal) },
+      () => {
+        if (this.viewReady) this.paintCharts();
+      },
+    );
+  },
+  switchRange(event) {
+    const range = event.currentTarget.dataset.range;
+    if (!range || range === this.data.range) return;
+    this.charts = {};
+    this.pending = {};
+    this.setData({ range }, () => this.refresh());
+  },
+  paintCharts() {
+    if (!this.viewReady || !this.series) return;
+    const series = this.series;
+    if (this.data.range === "year") {
+      this.initOne("#year-smoke", "smoke", yearSmokeOption(series), () => {
+        this.initOne("#year-drink", "drink", yearDrinkOption(series));
+      });
+      return;
+    }
+    this.initOne("#day-chart", "day", dayLineOption(series));
+  },
+  initOne(selector, key, option, done) {
+    this.latest[key] = option;
+    const comp = this.selectComponent(selector);
+    if (!comp) return;
+    if (this.charts[key]) {
+      this.charts[key].setOption(option, true);
+      if (done) done();
+      return;
+    }
+    if (this.pending[key]) return;
+    this.pending[key] = true;
+    comp.init((canvas, width, height, dpr) => {
+      const chart = mountChart(canvas, width, height, dpr, this.latest[key]);
+      this.charts[key] = chart;
+      this.pending[key] = false;
+      if (done) done();
+      return chart;
     });
-    this.showMonth(data.entries, now.getFullYear(), now.getMonth() + 1);
-    this.showYear(data.entries, now.getFullYear());
-  },
-  showMonth(entries, year, month) {
-    const scoped = filterMonth(entries, year, month);
-    const summary = summarize(scoped);
-    const max = Math.max(1, ...daySeries(entries, year, month).map((day) => day.smokes));
-    this.setData({
-      monthTitle: `${year}年${month}月`,
-      monthEmpty: scoped.length === 0,
-      monthSummary: summary,
-      monthDrinks: summary.byDrink.filter((item) => item.count > 0),
-      monthMood: moodLine(summary),
-      days: daySeries(entries, year, month).map((day) => ({
-        day: day.day,
-        height: Math.round((day.smokes / max) * 120),
-      })),
-    });
-  },
-  showYear(entries, year) {
-    const scoped = filterYear(entries, year);
-    const summary = summarize(scoped);
-    this.setData({
-      yearTitle: `${year}年`,
-      yearEmpty: scoped.length === 0,
-      yearSummary: summary,
-      yearMonths: monthSeries(entries, year),
-      yearMood: moodLine(summary),
-    });
-  },
-  switchTab(event) {
-    this.setData({ tab: event.currentTarget.dataset.tab });
-  },
-  onMonth(event) {
-    const data = load();
-    const months = listMonths(data.entries);
-    const picked = months[Number(event.detail.value)];
-    if (!picked) return;
-    this.setData({ monthIndex: Number(event.detail.value) });
-    this.showMonth(data.entries, picked.year, picked.month);
-  },
-  onYear(event) {
-    const data = load();
-    const years = listYears(data.entries);
-    const year = years[Number(event.detail.value)];
-    if (!year) return;
-    this.setData({ yearIndex: Number(event.detail.value) });
-    this.showYear(data.entries, year);
   },
   shareCurrent() {
-    const data = load();
     const now = new Date();
-    if (this.data.tab === "year") {
-      const year = Number(String(this.data.yearTitle).replace("年", "")) || now.getFullYear();
-      const summary = summarize(filterYear(data.entries, year));
-      if (!filterYear(data.entries, year).length) {
-        wx.showToast({ title: "这一年还是空的", icon: "none" });
-        return;
-      }
-      wx.setClipboardData({ data: shareText(`${year}年`, summary) });
-      return;
-    }
-    const title = this.data.monthTitle || `${now.getFullYear()}年${now.getMonth() + 1}月`;
-    const matched = title.match(/(\d+)年(\d+)月/);
-    const year = matched ? Number(matched[1]) : now.getFullYear();
-    const month = matched ? Number(matched[2]) : now.getMonth() + 1;
-    const scoped = filterMonth(data.entries, year, month);
+    const scoped = (this.entries || []).filter((entry) => entryInRange(entry, this.data.range, now));
     if (!scoped.length) {
-      wx.showToast({ title: "这个月还是空的", icon: "none" });
+      wx.showToast({ title: "这段还是空的", icon: "none" });
       return;
     }
-    wx.setClipboardData({ data: shareText(title, summarize(scoped)) });
+    wx.setClipboardData({ data: shareText(shareTitle(this.data.range, now), summarize(scoped)) });
   },
 });
