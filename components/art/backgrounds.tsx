@@ -75,21 +75,16 @@ function WildScene({ id }: { id: string }) {
   return (
     <g>
       <defs>
-        <linearGradient id={`${id}-wild`} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#120014" />
-          <stop offset="1" stopColor="#3b0764" />
+        <linearGradient id={`${id}-wild`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#070606" />
+          <stop offset="1" stopColor="#1a1012" />
         </linearGradient>
       </defs>
       <rect width="400" height="800" fill={`url(#${id}-wild)`} />
-      <path d="M-10 120 L140 40 L120 160 Z" fill="#ff2bd6" />
-      <path d="M260 80 L420 20 L390 180 Z" fill="#00f0ff" opacity="0.85" />
-      <path d="M40 300 L200 240 L160 420 L20 380 Z" fill="#ffe600" />
-      <path d="M220 340 L390 280 L360 520 L190 460 Z" fill="#39ff14" opacity="0.9" />
-      <circle cx="80" cy="560" r="46" fill="#ff2bd6" />
-      <circle cx="300" cy="620" r="70" fill="#00f0ff" />
-      <circle cx="180" cy="700" r="36" fill="#ffe600" />
-      <path d="M0 160 L80 200 L40 280 L140 240 L100 360" stroke="#fff" strokeWidth="6" fill="none" />
-      <path d="M240 480 L320 420 L280 560 L380 500" stroke="#ff2bd6" strokeWidth="8" fill="none" />
+      <path d="M0 168 H400" stroke="#6b1a24" strokeWidth="2" />
+      <rect x="48" y="220" width="16" height="300" fill="#3a1218" />
+      <rect x="336" y="280" width="12" height="230" fill="#7a1c28" />
+      <path d="M64 640 H336" stroke="#9b2433" strokeWidth="3" />
     </g>
   );
 }

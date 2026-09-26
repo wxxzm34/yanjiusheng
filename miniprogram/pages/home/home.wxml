@@ -1,4 +1,4 @@
-<view class="wrap theme" style="background: linear-gradient({{bg.from}}, {{bg.to}}); color: {{skin.ink}};">
+<view class="wrap theme {{skin.id === 'outfit-wild' ? 'rock' : ''}}" style="background: linear-gradient({{bg.from}}, {{bg.to}}); color: {{skin.ink}};">
   <view class="h1">烟酒生</view>
   <view class="muted">{{greeting}} · 装扮 · {{skin.name}}</view>
 
@@ -15,7 +15,7 @@
     <view class="count">{{smokeCount}} 支烟</view>
     <view class="muted">{{drinkCount ? '还有 ' + drinkCount + ' 杯酒' : '酒还没记'}}</view>
     <view class="log-row">
-      <button class="btn tap" style="background: {{skin.accent}}; color: {{skin.paper}};" bindtap="logSmoke">记一支</button>
+      <button class="btn tap" style="background: {{skin.accent}}; color: {{skin.onAccent || skin.paper}};" bindtap="logSmoke">记一支</button>
       <qty-stepper value="{{smokeQty}}" bind:change="onSmokeQty" />
       <button class="btn record" style="background: {{skin.ink}}; color: {{skin.paper}};" bindtap="logSmokeBatch">记录</button>
     </view>

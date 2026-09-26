@@ -51,3 +51,18 @@
   color: #7a6558;
   opacity: 1;
 }
+
+.rock .card {
+  background: #141011;
+  color: #f3e8e6;
+}
+
+.rock .card .muted {
+  color: #c9b4b0;
+}
+
+.rock .btn-line,
+.rock .link {
+  background: #1c1416;
+  color: #f3e8e6;
+}
