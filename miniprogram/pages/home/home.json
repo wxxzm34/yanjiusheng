@@ -2,6 +2,7 @@
   "navigationBarTitleText": "烟酒生",
   "usingComponents": {
     "tab-bar": "/components/tabbar/tabbar",
-    "mood-picker": "/components/mood-picker/mood-picker"
+    "mood-picker": "/components/mood-picker/mood-picker",
+    "qty-stepper": "/components/qty-stepper/qty-stepper"
   }
 }

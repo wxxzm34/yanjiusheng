@@ -8,7 +8,9 @@ import { DataActions } from "@/components/data-actions";
 import { DrinkDialog } from "@/components/drink-dialog";
 import { EntryEditor } from "@/components/entry-editor";
 import { MoodPicker } from "@/components/mood-picker";
+import { QuantityStepper } from "@/components/quantity-stepper";
 import { Button } from "@/components/ui/button";
+import { normalizeCount } from "@/lib/quantity";
 import { drinkTitle } from "@/lib/stats";
 import { currentPeriod, formatTime, greeting } from "@/lib/time";
 import { startOfDay } from "@/lib/time";
@@ -18,6 +20,8 @@ export function HomeView() {
   const app = useApp();
   const [draftMood, setDraftMood] = useState<Mood | null>(null);
   const [freshId, setFreshId] = useState<string | null>(null);
+  const [freshCount, setFreshCount] = useState(1);
+  const [smokeQty, setSmokeQty] = useState("1");
   const [linkFresh, setLinkFresh] = useState(false);
   const [gag, setGag] = useState<Gag>(null);
   const [drinkOpen, setDrinkOpen] = useState(false);
@@ -31,8 +35,8 @@ export function HomeView() {
     () => app.entries.filter((entry) => startOfDay(entry.at) === startOfDay(now)),
     [app.entries, now],
   );
-  const smokes = today.filter((entry) => entry.kind === "smoke").length;
-  const drinks = today.filter((entry) => entry.kind === "drink").length;
+  const smokes = today.reduce((sum, entry) => sum + (entry.kind === "smoke" ? entry.count : 0), 0);
+  const drinks = today.reduce((sum, entry) => sum + (entry.kind === "drink" ? entry.count : 0), 0);
   const recentLocations = useMemo(() => {
     const seen = new Set<string>();
     const list: string[] = [];
@@ -52,12 +56,15 @@ export function HomeView() {
     if (fresh && fresh.kind === "smoke") app.saveEntry({ ...fresh, mood });
   }
 
-  function logSmoke() {
-    const entry = app.addSmoke(draftMood);
+  function logSmoke(count: number) {
+    const safe = normalizeCount(count);
+    const entry = app.addSmoke(draftMood, safe);
     setFreshId(entry.id);
+    setFreshCount(safe);
     setLinkFresh(true);
     setNow(Date.now());
     setGag({ nonce: Date.now(), type: "smoke" });
+    setSmokeQty(safe > 1 ? "1" : String(normalizeCount(smokeQty)));
     if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") navigator.vibrate(12);
   }
 
@@ -104,7 +111,9 @@ export function HomeView() {
             onChange={pickMood}
             label={
               linked
-                ? "正在改刚才那支的心情，下一支也会带上"
+                ? freshCount > 1
+                  ? "正在改刚才这几支的心情，下一笔也会带上"
+                  : "正在改刚才那支的心情，下一支也会带上"
                 : "先选心情也行，不选直接记"
             }
           />
@@ -114,20 +123,33 @@ export function HomeView() {
               className="mt-2 text-sm underline decoration-dotted underline-offset-4"
               onClick={() => setLinkFresh(false)}
             >
-              刚才那支就这样
+              {freshCount > 1 ? "刚才这几支就这样" : "刚才那支就这样"}
             </button>
           )}
         </div>
 
         <div className="mt-4 grid gap-2">
-          <button
-            type="button"
-            data-testid="log-smoke"
-            onClick={logSmoke}
-            className="sticker h-14 rounded-full bg-[var(--skin-accent)] text-lg font-medium text-[var(--primary-foreground)]"
-          >
-            记一支
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              data-testid="log-smoke"
+              onClick={() => logSmoke(1)}
+              className="sticker h-14 min-w-28 flex-1 rounded-full bg-[var(--skin-accent)] text-lg font-medium text-[var(--primary-foreground)]"
+            >
+              记一支
+            </button>
+            <div className="flex items-center gap-2">
+              <QuantityStepper value={smokeQty} onChange={setSmokeQty} testId="smoke-qty" />
+              <button
+                type="button"
+                data-testid="log-smoke-batch"
+                onClick={() => logSmoke(normalizeCount(smokeQty))}
+                className="sticker h-12 rounded-full bg-[var(--skin-ink)] px-4 text-base font-medium text-white"
+              >
+                记录
+              </button>
+            </div>
+          </div>
           <Button
             type="button"
             variant="outline"
@@ -171,6 +193,7 @@ export function HomeView() {
                     >
                       <span>
                         {formatTime(entry.at)} · {entry.kind === "smoke" ? "烟" : drinkTitle(entry)}
+                        {entry.count > 1 ? ` ×${entry.count}` : ""}
                         {entry.kind === "drink" && entry.location ? ` · ${entry.location}` : ""}
                       </span>
                       <span>{entry.mood ?? "未选"}</span>

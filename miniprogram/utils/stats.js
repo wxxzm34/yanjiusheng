@@ -1,4 +1,5 @@
 const { MOODS, DRINKS } = require("./storage");
+const { canonicalMood, normalizeCount } = require("./quantity");
 
 function startOfDay(ts) {
   const date = new Date(ts);
@@ -23,27 +24,37 @@ function formatDayLabel(ts, now) {
   return `${date.getMonth() + 1}月${date.getDate()}日`;
 }
 
+function emptyMoods() {
+  const moods = {};
+  MOODS.forEach((mood) => {
+    moods[mood] = 0;
+  });
+  return moods;
+}
+
 function summarize(entries) {
-  const moods = { 无聊: 0, 开心: 0, 难过: 0 };
+  const moods = emptyMoods();
   let unset = 0;
   let smokes = 0;
   let drinks = 0;
   const byDrink = DRINKS.map((type) => ({ type, count: 0, labels: [] }));
   const others = {};
   entries.forEach((entry) => {
-    if (entry.mood && moods[entry.mood] !== undefined) moods[entry.mood] += 1;
-    else unset += 1;
+    const count = normalizeCount(entry.count);
+    const mood = canonicalMood(entry.mood);
+    if (mood && moods[mood] !== undefined) moods[mood] += count;
+    else unset += count;
     if (entry.kind === "smoke") {
-      smokes += 1;
+      smokes += count;
       return;
     }
-    drinks += 1;
+    drinks += count;
     const bucket = byDrink.find((item) => item.type === entry.drinkType);
     if (!bucket) return;
-    bucket.count += 1;
+    bucket.count += count;
     if (entry.drinkType === "其他") {
       const label = (entry.drinkLabel || "其他").trim() || "其他";
-      others[label] = (others[label] || 0) + 1;
+      others[label] = (others[label] || 0) + count;
     }
   });
   const otherBucket = byDrink.find((item) => item.type === "其他");
@@ -101,8 +112,9 @@ function daySeries(entries, year, month) {
     if (date.getFullYear() !== year || date.getMonth() + 1 !== month) return;
     const point = days[date.getDate() - 1];
     if (!point) return;
-    if (entry.kind === "smoke") point.smokes += 1;
-    else point.drinks += 1;
+    const count = normalizeCount(entry.count);
+    if (entry.kind === "smoke") point.smokes += count;
+    else point.drinks += count;
   });
   return days;
 }
@@ -114,8 +126,9 @@ function monthSeries(entries, year) {
     const date = new Date(entry.at);
     if (date.getFullYear() !== year) return;
     const point = points[date.getMonth()];
-    if (entry.kind === "smoke") point.smokes += 1;
-    else point.drinks += 1;
+    const count = normalizeCount(entry.count);
+    if (entry.kind === "smoke") point.smokes += count;
+    else point.drinks += count;
   });
   return points;
 }
@@ -150,26 +163,30 @@ function groupByDay(entries) {
   sorted.forEach((entry) => {
     const day = startOfDay(entry.at);
     const last = groups[groups.length - 1];
+    const count = normalizeCount(entry.count);
+    const mood = canonicalMood(entry.mood);
+    const name = entry.kind === "smoke" ? "烟" : drinkTitle(entry);
     const view = {
       ...entry,
+      mood,
+      count,
       timeText: formatTime(entry.at),
-      title: entry.kind === "smoke" ? "烟" : drinkTitle(entry),
-      moodText: entry.mood || "未选",
-      place: entry.kind === "drink" ? entry.location || "地点空着" : "一支烟",
+      title: count > 1 ? `${name} ×${count}` : name,
+      moodText: mood || "未选",
+      place: entry.kind === "drink" ? entry.location || "地点空着" : count > 1 ? `${count} 支烟` : "一支烟",
     };
     if (!last || last.day !== day) {
-      const smokes = entry.kind === "smoke" ? 1 : 0;
       groups.push({
         day,
         label: formatDayLabel(entry.at),
         entries: [view],
-        smokes,
-        drinks: entry.kind === "drink" ? 1 : 0,
+        smokes: entry.kind === "smoke" ? count : 0,
+        drinks: entry.kind === "drink" ? count : 0,
       });
     } else {
       last.entries.push(view);
-      if (entry.kind === "smoke") last.smokes += 1;
-      else last.drinks += 1;
+      if (entry.kind === "smoke") last.smokes += count;
+      else last.drinks += count;
     }
   });
   return groups;

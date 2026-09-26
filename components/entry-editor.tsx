@@ -57,7 +57,12 @@ function EditorBody({ entry, onClose }: { entry: Entry; onClose: () => void }) {
         <DialogHeader>
           <DialogTitle>删掉这条？</DialogTitle>
           <DialogDescription>
-            {formatTime(draft.at)} 的{draft.kind === "smoke" ? "烟" : drinkTitle(draft)}
+            {formatTime(draft.at)} 的
+            {draft.count > 1
+              ? `${draft.count} ${draft.kind === "smoke" ? "支烟" : `杯${drinkTitle(draft)}`}`
+              : draft.kind === "smoke"
+                ? "烟"
+                : drinkTitle(draft)}
             会从今天的数和月报里消失。
           </DialogDescription>
         </DialogHeader>
@@ -85,7 +90,15 @@ function EditorBody({ entry, onClose }: { entry: Entry; onClose: () => void }) {
   return (
     <>
       <DialogHeader>
-        <DialogTitle>{draft.kind === "smoke" ? "改这支烟" : "改这杯酒"}</DialogTitle>
+        <DialogTitle>
+          {draft.kind === "smoke"
+            ? draft.count > 1
+              ? `改这 ${draft.count} 支烟`
+              : "改这支烟"
+            : draft.count > 1
+              ? `改这 ${draft.count} 杯酒`
+              : "改这杯酒"}
+        </DialogTitle>
         <DialogDescription>{formatTime(draft.at)} 记下的。时间不动，心情和酒的信息可以改。</DialogDescription>
       </DialogHeader>
       <MoodPicker prefix="edit" label="心情" value={draft.mood} onChange={(mood) => setDraft({ ...draft, mood })} />

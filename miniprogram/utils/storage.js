@@ -1,7 +1,7 @@
 const { SKINS, BACKGROUNDS } = require("./packs");
+const { MOODS, canonicalMood, normalizeCount } = require("./quantity");
 
 const KEY = "yanjiusheng.v1";
-const MOODS = ["无聊", "开心", "难过"];
 const DRINKS = ["红酒", "白酒", "啤酒", "家酿", "黄酒", "其他"];
 
 function defaultData() {
@@ -30,9 +30,10 @@ function sanitize(raw) {
   const entries = [];
   (raw.entries || []).forEach((item) => {
     if (!item || typeof item.id !== "string" || typeof item.at !== "number") return;
-    const mood = MOODS.indexOf(item.mood) >= 0 ? item.mood : null;
+    const mood = canonicalMood(item.mood);
+    const count = normalizeCount(item.count);
     if (item.kind === "smoke") {
-      entries.push({ id: item.id, kind: "smoke", at: item.at, mood });
+      entries.push({ id: item.id, kind: "smoke", at: item.at, mood, count });
       return;
     }
     if (item.kind !== "drink" || DRINKS.indexOf(item.drinkType) < 0) return;
@@ -44,6 +45,7 @@ function sanitize(raw) {
       drinkType: item.drinkType,
       drinkLabel: String(item.drinkLabel || item.drinkType).slice(0, 12),
       location: String(item.location || "").slice(0, 24),
+      count,
     });
   });
   let activeSkinId = skinIds.has(raw.activeSkinId) ? raw.activeSkinId : base.activeSkinId;
@@ -89,6 +91,7 @@ function buildSample(now) {
     kind: "smoke",
     at: stamp(day, hour, minute, base),
     mood,
+    count: 1,
   });
   const drink = (day, hour, minute, mood, drinkType, location, label) => ({
     id: uid(),
@@ -98,17 +101,30 @@ function buildSample(now) {
     drinkType,
     drinkLabel: drinkType === "其他" ? label || "其他" : drinkType,
     location,
+    count: 1,
   });
   return [
-    smoke(0, 9, 12, "无聊"),
-    smoke(0, 15, 40, "开心"),
-    drink(0, 19, 5, "开心", "啤酒", "阳台"),
-    smoke(1, 21, 18, "难过"),
-    drink(1, 20, 2, "开心", "红酒", "厨房"),
-    smoke(35, 20, 12, "无聊"),
-    drink(38, 18, 18, "难过", "黄酒", "家里"),
-    drink(100, 19, 16, "开心", "其他", "露台", "桂花酿"),
+    smoke(0, 9, 12, "独酌明月"),
+    smoke(0, 15, 40, "会友欢饮"),
+    drink(0, 19, 5, "会友欢饮", "啤酒", "阳台"),
+    smoke(1, 21, 18, "乱我心忧"),
+    drink(1, 20, 2, "闲坐静思", "红酒", "厨房"),
+    smoke(35, 20, 12, "独酌明月"),
+    drink(38, 18, 18, "乱我心忧", "黄酒", "家里"),
+    drink(100, 19, 16, "会友欢饮", "其他", "露台", "桂花酿"),
   ];
 }
 
-module.exports = { KEY, MOODS, DRINKS, defaultData, uid, load, save, buildSample };
+module.exports = {
+  KEY,
+  MOODS,
+  DRINKS,
+  defaultData,
+  uid,
+  load,
+  save,
+  buildSample,
+  sanitize,
+  canonicalMood,
+  normalizeCount,
+};

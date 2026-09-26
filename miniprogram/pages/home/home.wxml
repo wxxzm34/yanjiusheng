@@ -14,9 +14,13 @@
     <view class="muted">今天</view>
     <view class="count">{{smokeCount}} 支烟</view>
     <view class="muted">{{drinkCount ? '还有 ' + drinkCount + ' 杯酒' : '酒还没记'}}</view>
-    <mood-picker label="{{linkFresh ? '正在改刚才那支的心情' : '先选心情也行，不选直接记'}}" value="{{draftMood}}" bind:change="onMood" />
-    <view wx:if="{{linkFresh}}" class="link" bindtap="freezeMood">刚才那支就这样</view>
-    <button class="btn" style="background: {{skin.accent}}; color: #fff;" bindtap="logSmoke">记一支</button>
+    <mood-picker label="{{linkFresh ? (freshCount > 1 ? '正在改刚才这几支的心情' : '正在改刚才那支的心情') : '先选心情也行，不选直接记'}}" value="{{draftMood}}" bind:change="onMood" />
+    <view wx:if="{{linkFresh}}" class="link" bindtap="freezeMood">{{freshCount > 1 ? '刚才这几支就这样' : '刚才那支就这样'}}</view>
+    <view class="log-row">
+      <button class="btn tap" style="background: {{skin.accent}}; color: #fff;" bindtap="logSmoke">记一支</button>
+      <qty-stepper value="{{smokeQty}}" bind:change="onSmokeQty" />
+      <button class="btn record" bindtap="logSmokeBatch">记录</button>
+    </view>
     <button class="btn btn-line" bindtap="goDrink">记一杯</button>
   </view>
 

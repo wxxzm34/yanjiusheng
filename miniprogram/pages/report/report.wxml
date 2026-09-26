@@ -26,5 +26,25 @@
   </block>
 
   <view class="card summary">{{summaryText}}</view>
+  <view class="card">
+    <view>心情</view>
+    <view wx:if="{{mood.empty}}" class="muted">这段还没有心情。</view>
+    <block wx:else>
+      <view class="mood-bar">
+        <view
+          wx:for="{{mood.items}}"
+          wx:key="key"
+          class="mood-seg"
+          style="flex: {{item.count}}; background: {{item.color}};"
+        ></view>
+      </view>
+      <view class="mood-legend">
+        <view wx:for="{{mood.items}}" wx:key="key" class="legend-item">
+          <view class="swatch" style="background: {{item.color}};"></view>
+          <text>{{item.key}} {{item.count}}</text>
+        </view>
+      </view>
+    </block>
+  </view>
   <tab-bar current="report" />
 </view>

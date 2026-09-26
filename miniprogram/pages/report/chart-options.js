@@ -1,3 +1,5 @@
+const { normalizeCount } = require("../../utils/quantity");
+
 const SMOKE = "#e25b3a";
 const DRINK = "#3c7d9e";
 const INK = "#7a6558";
@@ -54,8 +56,9 @@ function windowFor(range, now) {
 
 function bump(bucket, entry) {
   if (!bucket || !entry) return;
-  if (entry.kind === "smoke") bucket.smokes += 1;
-  else if (entry.kind === "drink") bucket.drinks += 1;
+  const count = normalizeCount(entry.count);
+  if (entry.kind === "smoke") bucket.smokes += count;
+  else if (entry.kind === "drink") bucket.drinks += count;
 }
 
 function rangeSeries(entries, range, now) {

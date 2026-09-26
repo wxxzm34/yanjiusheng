@@ -2,6 +2,7 @@ const echarts = require("../../ec-canvas/echarts");
 const { load } = require("../../utils/storage");
 const { paintChrome } = require("../../utils/packs");
 const { summarize, shareText } = require("../../utils/stats");
+const { MOODS, MOOD_COLORS, UNSET_MOOD_COLOR } = require("../../utils/quantity");
 const {
   rangeSeries,
   entryInRange,
@@ -10,6 +11,24 @@ const {
   yearSmokeOption,
   yearDrinkOption,
 } = require("./chart-options");
+
+function moodView(entries, range, now) {
+  const scoped = (entries || []).filter((entry) => entryInRange(entry, range, now));
+  const summary = summarize(scoped);
+  const total = MOODS.reduce((sum, mood) => sum + (summary.moods[mood] || 0), 0) + summary.unset;
+  const items = [];
+  MOODS.forEach((mood) => {
+    const count = summary.moods[mood] || 0;
+    if (!count) return;
+    items.push({ key: mood, count, color: MOOD_COLORS[mood] });
+  });
+  if (summary.unset > 0) items.push({ key: "未选", count: summary.unset, color: UNSET_MOOD_COLOR });
+  return {
+    items,
+    empty: total === 0,
+    line: items.length ? items.map((item) => `${item.key} ${item.count}`).join(" · ") : "这段还没有心情",
+  };
+}
 
 function shareTitle(range, now) {
   const year = now.getFullYear();
@@ -41,6 +60,7 @@ Page({
       { id: "d30", label: "最近 30 天" },
     ],
     summaryText: "本月共抽烟 0 根，喝酒 0 两/杯",
+    mood: { items: [], empty: true, line: "这段还没有心情" },
     dayEc: { lazyLoad: true },
     smokeEc: { lazyLoad: true },
     drinkEc: { lazyLoad: true },
@@ -64,10 +84,14 @@ Page({
     this.paintCharts();
   },
   refresh() {
-    const series = rangeSeries(this.entries, this.data.range, new Date());
+    const now = new Date();
+    const series = rangeSeries(this.entries, this.data.range, now);
     this.series = series;
     this.setData(
-      { summaryText: summaryLine(this.data.range, series.smokeTotal, series.drinkTotal) },
+      {
+        summaryText: summaryLine(this.data.range, series.smokeTotal, series.drinkTotal),
+        mood: moodView(this.entries, this.data.range, now),
+      },
       () => {
         if (this.viewReady) this.paintCharts();
       },

@@ -1,0 +1,23 @@
+.stepper {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-radius: 999rpx;
+  border: 1rpx solid rgba(43, 33, 24, 0.08);
+  padding: 4rpx;
+}
+
+.step {
+  width: 64rpx;
+  height: 64rpx;
+  line-height: 64rpx;
+  text-align: center;
+  font-size: 36rpx;
+}
+
+.num {
+  width: 72rpx;
+  height: 64rpx;
+  text-align: center;
+  font-size: 32rpx;
+}

@@ -1,6 +1,6 @@
 <view class="wrap">
   <view class="h1">记录</view>
-  <view class="muted">今天和更早的都在这儿。支数从记录里数出来。</view>
+  <view class="muted">今天和更早的都在这儿。支数按记下的数量加总。</view>
   <view wx:if="{{groups.length === 0}}" class="card">
     <view class="h1" style="font-size: 40rpx;">还没有记录</view>
     <view class="muted">抽过、喝过，都可以轻轻记一笔。</view>

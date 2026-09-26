@@ -16,15 +16,7 @@ import {
   summarize,
 } from "@/lib/stats";
 import { currentPeriod, formatMonth } from "@/lib/time";
-import type { Mood } from "@/lib/types";
-import { MOODS } from "@/lib/types";
-
-const moodColor: Record<Mood | "unset", string> = {
-  开心: "#ffb703",
-  无聊: "#8ecae6",
-  难过: "#b388eb",
-  unset: "#e6d5c3",
-};
+import { MOODS, MOOD_COLORS, UNSET_MOOD_COLOR } from "@/lib/types";
 
 export function ReportView() {
   const { entries, openShare } = useApp();
@@ -254,8 +246,8 @@ function DrinkMix({ summary }: { summary: ReturnType<typeof summarize> }) {
 function MoodMix({ summary }: { summary: ReturnType<typeof summarize> }) {
   const total = MOODS.reduce((sum, mood) => sum + summary.moods[mood], 0) + summary.unset;
   const segments = [
-    ...MOODS.map((mood) => ({ key: mood, count: summary.moods[mood], color: moodColor[mood] })),
-    { key: "未选", count: summary.unset, color: moodColor.unset },
+    ...MOODS.map((mood) => ({ key: mood, count: summary.moods[mood], color: MOOD_COLORS[mood] })),
+    { key: "未选", count: summary.unset, color: UNSET_MOOD_COLOR },
   ].filter((item) => item.count > 0);
   return (
     <section className="paper-card rounded-3xl p-4">
@@ -269,9 +261,14 @@ function MoodMix({ summary }: { summary: ReturnType<typeof summarize> }) {
               <div key={item.key} style={{ width: `${(item.count / total) * 100}%`, background: item.color }} />
             ))}
           </div>
-          <p className="mt-2 text-sm">
-            {segments.map((item) => `${item.key} ${item.count}`).join(" · ")}
-          </p>
+          <ul className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-sm">
+            {segments.map((item) => (
+              <li key={item.key} className="flex items-center gap-1">
+                <span className="size-2.5 rounded-full" style={{ background: item.color }} />
+                {item.key} {item.count}
+              </li>
+            ))}
+          </ul>
         </>
       )}
     </section>

@@ -1,6 +1,7 @@
 {
   "navigationBarTitleText": "记一杯",
   "usingComponents": {
-    "mood-picker": "/components/mood-picker/mood-picker"
+    "mood-picker": "/components/mood-picker/mood-picker",
+    "qty-stepper": "/components/qty-stepper/qty-stepper"
   }
 }

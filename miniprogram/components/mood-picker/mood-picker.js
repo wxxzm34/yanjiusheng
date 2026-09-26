@@ -1,10 +1,12 @@
+const { MOODS } = require("../../utils/quantity");
+
 Component({
   properties: {
     label: { type: String, value: "心情" },
     value: { type: String, value: "" },
   },
   data: {
-    moods: ["无聊", "开心", "难过"],
+    moods: MOODS,
   },
   methods: {
     pick(event) {

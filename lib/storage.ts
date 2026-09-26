@@ -6,12 +6,12 @@ import {
   getBackground,
   getSkin,
 } from "@/lib/packs";
-import type { AppData, DrinkEntry, DrinkType, Entry, Mood, SmokeEntry } from "@/lib/types";
-import { DRINK_TYPES, MOODS } from "@/lib/types";
+import { canonicalMood, normalizeCount } from "@/lib/quantity";
+import type { AppData, DrinkEntry, DrinkType, Entry, SmokeEntry } from "@/lib/types";
+import { DRINK_TYPES } from "@/lib/types";
 
 export const STORAGE_KEY = "yanjiusheng.v1";
 
-const moodSet = new Set<string>(MOODS);
 const drinkSet = new Set<string>(DRINK_TYPES);
 const skinIds = new Set(SKINS.map((skin) => skin.id));
 const backgroundIds = new Set(BACKGROUNDS.map((background) => background.id));
@@ -35,18 +35,15 @@ export function createId() {
   return `id-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
-function asMood(value: unknown): Mood | null {
-  return typeof value === "string" && moodSet.has(value) ? (value as Mood) : null;
-}
-
 function sanitizeEntry(value: unknown): Entry | null {
   if (!value || typeof value !== "object") return null;
   const item = value as Record<string, unknown>;
   if (typeof item.id !== "string" || !item.id) return null;
   if (typeof item.at !== "number" || !Number.isFinite(item.at)) return null;
-  const mood = asMood(item.mood);
+  const mood = canonicalMood(item.mood);
+  const count = normalizeCount(item.count);
   if (item.kind === "smoke") {
-    const entry: SmokeEntry = { id: item.id, kind: "smoke", at: item.at, mood };
+    const entry: SmokeEntry = { id: item.id, kind: "smoke", at: item.at, mood, count };
     return entry;
   }
   if (item.kind !== "drink") return null;
@@ -65,6 +62,7 @@ function sanitizeEntry(value: unknown): Entry | null {
     drinkType,
     drinkLabel,
     location,
+    count,
   };
   return entry;
 }

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { MoodPicker } from "@/components/mood-picker";
+import { QuantityStepper } from "@/components/quantity-stepper";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { normalizeCount } from "@/lib/quantity";
 import type { DrinkType, Mood } from "@/lib/types";
 import { DRINK_TYPES } from "@/lib/types";
 import { cn } from "cn";
@@ -27,7 +29,13 @@ export function DrinkDialog({
   draftMood: Mood | null;
   recentLocations: string[];
   onOpenChange: (open: boolean) => void;
-  onSave: (input: { mood: Mood | null; drinkType: DrinkType; drinkLabel: string; location: string }) => void;
+  onSave: (input: {
+    mood: Mood | null;
+    drinkType: DrinkType;
+    drinkLabel: string;
+    location: string;
+    count: number;
+  }) => void;
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -54,9 +62,16 @@ function DrinkForm({
 }: {
   draftMood: Mood | null;
   recentLocations: string[];
-  onSave: (input: { mood: Mood | null; drinkType: DrinkType; drinkLabel: string; location: string }) => void;
+  onSave: (input: {
+    mood: Mood | null;
+    drinkType: DrinkType;
+    drinkLabel: string;
+    location: string;
+    count: number;
+  }) => void;
 }) {
   const [drinkType, setDrinkType] = useState<DrinkType>("啤酒");
+  const [qty, setQty] = useState("1");
   const [drinkLabel, setDrinkLabel] = useState("");
   const [location, setLocation] = useState("");
   const [mood, setMood] = useState<Mood | null>(draftMood);
@@ -71,7 +86,7 @@ function DrinkForm({
         className="grid gap-4"
         onSubmit={(event) => {
           event.preventDefault();
-          onSave({ mood, drinkType, drinkLabel, location });
+          onSave({ mood, drinkType, drinkLabel, location, count: normalizeCount(qty) });
         }}
       >
         <div className="grid grid-cols-3 gap-2">
@@ -133,6 +148,10 @@ function DrinkForm({
               ))}
             </div>
           )}
+        </div>
+        <div className="flex items-center justify-between gap-3">
+          <Label>几杯</Label>
+          <QuantityStepper value={qty} onChange={setQty} testId="drink-qty" />
         </div>
         <Button type="submit" className="h-12! text-base" data-testid="drink-save">
           记下来

@@ -1,4 +1,4 @@
-const { load, save, uid, DRINKS } = require("../../utils/storage");
+const { load, save, uid, DRINKS, normalizeCount } = require("../../utils/storage");
 const { paintChrome } = require("../../utils/packs");
 
 const LINES = {
@@ -16,6 +16,7 @@ Page({
     drinkLabel: "",
     location: "",
     mood: "",
+    qty: "1",
   },
   onShow() {
     paintChrome(load());
@@ -32,9 +33,13 @@ Page({
   onMood(event) {
     this.setData({ mood: event.detail.mood });
   },
+  onQty(event) {
+    this.setData({ qty: event.detail.value });
+  },
   saveDrink() {
     const data = load();
     const drinkType = this.data.drinkType;
+    const count = normalizeCount(this.data.qty);
     const drinkLabel = drinkType === "其他" ? (this.data.drinkLabel || "").trim().slice(0, 12) || "其他" : drinkType;
     data.entries.unshift({
       id: uid(),
@@ -44,6 +49,7 @@ Page({
       drinkType,
       drinkLabel,
       location: (this.data.location || "").trim().slice(0, 24),
+      count,
     });
     save(data);
     const line = drinkType === "其他" ? `这杯叫${drinkLabel}，先记下。` : LINES[drinkType];

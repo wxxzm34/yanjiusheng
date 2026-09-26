@@ -15,5 +15,9 @@
     <mood-picker label="这杯的心情" value="{{mood}}" bind:change="onMood" />
   </view>
   <input class="field" placeholder="在哪儿喝的，可以不填" maxlength="24" value="{{location}}" bindinput="onLocation" />
+  <view class="card qty-card">
+    <view class="muted">几杯</view>
+    <qty-stepper value="{{qty}}" bind:change="onQty" />
+  </view>
   <button class="btn" bindtap="saveDrink">记下来</button>
 </view>

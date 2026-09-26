@@ -1,4 +1,4 @@
-const { load, save, uid, buildSample } = require("../../utils/storage");
+const { load, save, uid, buildSample, normalizeCount } = require("../../utils/storage");
 const { paintChrome, getSkin, getBackground } = require("../../utils/packs");
 const { filterToday, summarize, shareText, formatTime, drinkTitle } = require("../../utils/stats");
 
@@ -21,6 +21,8 @@ Page({
     draftMood: "",
     linkFresh: false,
     freshId: "",
+    freshCount: 1,
+    smokeQty: "1",
     gag: false,
     gagText: "",
     smokeCount: 0,
@@ -36,12 +38,16 @@ Page({
   refresh() {
     const data = load();
     paintChrome(data);
-    const today = filterToday(data.entries).map((entry) => ({
-      ...entry,
-      timeText: formatTime(entry.at),
-      title: entry.kind === "smoke" ? "烟" : drinkTitle(entry),
-      moodText: entry.mood || "未选",
-    }));
+    const today = filterToday(data.entries).map((entry) => {
+      const name = entry.kind === "smoke" ? "烟" : drinkTitle(entry);
+      const count = entry.count || 1;
+      return {
+        ...entry,
+        timeText: formatTime(entry.at),
+        title: count > 1 ? `${name} ×${count}` : name,
+        moodText: entry.mood || "未选",
+      };
+    });
     const summary = summarize(today);
     this.setData({
       skin: getSkin(data.activeSkinId),
@@ -63,13 +69,24 @@ Page({
     this.refresh();
     this.setData({ draftMood: mood, linkFresh: true, freshId: this.data.freshId });
   },
+  onSmokeQty(event) {
+    this.setData({ smokeQty: event.detail.value });
+  },
   logSmoke() {
+    this.writeSmoke(1);
+  },
+  logSmokeBatch() {
+    this.writeSmoke(this.data.smokeQty);
+  },
+  writeSmoke(count) {
+    const safe = normalizeCount(count);
     const data = load();
     const entry = {
       id: uid(),
       kind: "smoke",
       at: Date.now(),
       mood: this.data.draftMood || null,
+      count: safe,
     };
     data.entries.unshift(entry);
     save(data);
@@ -77,7 +94,9 @@ Page({
     this.refresh();
     this.setData({
       freshId: entry.id,
+      freshCount: safe,
       linkFresh: true,
+      smokeQty: safe > 1 ? "1" : String(normalizeCount(this.data.smokeQty)),
       gag: true,
       gagText: LASER_LINE,
       draftMood: this.data.draftMood,

@@ -3,6 +3,7 @@
 import { createContext, useContext, useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
 import { DEFAULT_BG_ID, DEFAULT_SKIN_ID, getBackground, getSkin, type BackgroundPack, type Skin } from "@/lib/packs";
 import { buildSample } from "@/lib/sample";
+import { normalizeCount } from "@/lib/quantity";
 import { STORAGE_KEY, createId, defaultData, loadData, persistData, sanitizeData } from "@/lib/storage";
 import type { AppData, DrinkEntry, DrinkType, Entry, Mood, ShareTarget, SmokeEntry } from "@/lib/types";
 
@@ -21,12 +22,13 @@ type AppContextValue = {
   downloadPack: (id: string) => void;
   applySkin: (id: string) => void;
   applyBackground: (id: string) => void;
-  addSmoke: (mood: Mood | null) => SmokeEntry;
+  addSmoke: (mood: Mood | null, count?: number) => SmokeEntry;
   addDrink: (input: {
     mood: Mood | null;
     drinkType: DrinkType;
     drinkLabel: string;
     location: string;
+    count?: number;
   }) => DrinkEntry;
   saveEntry: (entry: Entry) => void;
   deleteEntry: (id: string) => void;
@@ -152,8 +154,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
           return { ...prev, activeBgId: id };
         });
       },
-      addSmoke: (mood: Mood | null) => {
-        const entry: SmokeEntry = { id: createId(), kind: "smoke", at: Date.now(), mood };
+      addSmoke: (mood: Mood | null, count = 1) => {
+        const entry: SmokeEntry = {
+          id: createId(),
+          kind: "smoke",
+          at: Date.now(),
+          mood,
+          count: normalizeCount(count),
+        };
         commit((prev) => ({ ...prev, entries: [entry, ...prev.entries] }));
         return entry;
       },
@@ -168,6 +176,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           drinkType: input.drinkType,
           drinkLabel: label,
           location: input.location.trim().slice(0, 24),
+          count: normalizeCount(input.count),
         };
         commit((prev) => ({ ...prev, entries: [entry, ...prev.entries] }));
         return entry;

@@ -28,3 +28,36 @@
   font-size: 30rpx;
   line-height: 1.6;
 }
+
+.mood-bar {
+  display: flex;
+  height: 28rpx;
+  margin-top: 16rpx;
+  overflow: hidden;
+  border-radius: 999rpx;
+}
+
+.mood-seg {
+  min-width: 8rpx;
+  height: 100%;
+}
+
+.mood-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx 20rpx;
+  margin-top: 16rpx;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  font-size: 26rpx;
+}
+
+.swatch {
+  width: 20rpx;
+  height: 20rpx;
+  border-radius: 999rpx;
+}
