@@ -1,12 +1,12 @@
-const { MOODS } = require("../../utils/quantity");
+const { MOODS, MOOD_EMOJI } = require("../../utils/quantity");
 
 Component({
   properties: {
-    label: { type: String, value: "心情" },
+    label: { type: String, value: "" },
     value: { type: String, value: "" },
   },
   data: {
-    moods: MOODS,
+    moods: MOODS.map((name) => ({ name, emoji: MOOD_EMOJI[name] })),
   },
   methods: {
     pick(event) {

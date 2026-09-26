@@ -1,6 +1,6 @@
-<view class="wrap" style="background: {{bg.from}};">
+<view class="wrap theme" style="background: linear-gradient({{bg.from}}, {{bg.to}}); color: {{skin.ink}};">
   <view class="h1">烟酒生</view>
-  <view class="muted">{{greeting}} · {{skin.name}} · {{bg.name}}</view>
+  <view class="muted">{{greeting}} · 装扮 · {{skin.name}}</view>
 
   <view class="stage" wx:if="{{gag}}">
     <view class="bubble">{{gagText}}</view>
@@ -14,14 +14,14 @@
     <view class="muted">今天</view>
     <view class="count">{{smokeCount}} 支烟</view>
     <view class="muted">{{drinkCount ? '还有 ' + drinkCount + ' 杯酒' : '酒还没记'}}</view>
-    <mood-picker label="{{linkFresh ? (freshCount > 1 ? '正在改刚才这几支的心情' : '正在改刚才那支的心情') : '先选心情也行，不选直接记'}}" value="{{draftMood}}" bind:change="onMood" />
-    <view wx:if="{{linkFresh}}" class="link" bindtap="freezeMood">{{freshCount > 1 ? '刚才这几支就这样' : '刚才那支就这样'}}</view>
     <view class="log-row">
-      <button class="btn tap" style="background: {{skin.accent}}; color: #fff;" bindtap="logSmoke">记一支</button>
+      <button class="btn tap" style="background: {{skin.accent}}; color: {{skin.paper}};" bindtap="logSmoke">记一支</button>
       <qty-stepper value="{{smokeQty}}" bind:change="onSmokeQty" />
-      <button class="btn record" bindtap="logSmokeBatch">记录</button>
+      <button class="btn record" style="background: {{skin.ink}}; color: {{skin.paper}};" bindtap="logSmokeBatch">记录</button>
     </view>
     <button class="btn btn-line" bindtap="goDrink">记一杯</button>
+    <mood-picker label="{{linkFresh ? '点一下改刚才记下的心情，下一笔也会带上' : '点一下，下一笔记下时带上'}}" value="{{draftMood}}" bind:change="onMood" />
+    <view wx:if="{{linkFresh}}" class="link" bindtap="freezeMood">{{freshCount > 1 ? '刚才这几笔就这样' : '刚才那笔就这样'}}</view>
   </view>
 
   <view class="card" wx:if="{{today.length === 0}}">

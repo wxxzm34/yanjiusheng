@@ -6,9 +6,11 @@ export const MAX_COUNT = 99;
 const moodSet = new Set<string>(MOODS);
 
 export const LEGACY_MOODS: Record<string, Mood> = {
-  开心: "会友欢饮",
-  无聊: "独酌明月",
-  难过: "乱我心忧",
+  无聊: "平静",
+  独酌明月: "平静",
+  闲坐静思: "平静",
+  会友欢饮: "开心",
+  乱我心忧: "难过",
 };
 
 export function canonicalMood(value: unknown): Mood | null {

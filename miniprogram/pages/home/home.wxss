@@ -34,6 +34,20 @@
 
 .log-row .record {
   flex: none;
-  background: #2b2118;
-  color: #fffaf6;
+}
+
+.theme .card,
+.theme .btn-line,
+.theme .link {
+  color: #2b2118;
+}
+
+.theme > .muted {
+  color: inherit;
+  opacity: 0.75;
+}
+
+.theme .card .muted {
+  color: #7a6558;
+  opacity: 1;
 }

@@ -1,11 +1,4 @@
-import {
-  BACKGROUNDS,
-  DEFAULT_BG_ID,
-  DEFAULT_SKIN_ID,
-  SKINS,
-  getBackground,
-  getSkin,
-} from "@/lib/packs";
+import { DEFAULT_BG_ID, DEFAULT_SKIN_ID, OUTFITS, getBackground, getSkin } from "@/lib/packs";
 import { canonicalMood, normalizeCount } from "@/lib/quantity";
 import type { AppData, DrinkEntry, DrinkType, Entry, SmokeEntry } from "@/lib/types";
 import { DRINK_TYPES } from "@/lib/types";
@@ -13,16 +6,13 @@ import { DRINK_TYPES } from "@/lib/types";
 export const STORAGE_KEY = "yanjiusheng.v1";
 
 const drinkSet = new Set<string>(DRINK_TYPES);
-const skinIds = new Set(SKINS.map((skin) => skin.id));
-const backgroundIds = new Set(BACKGROUNDS.map((background) => background.id));
+const outfitIds = new Set(OUTFITS.map((outfit) => outfit.id));
 
 export function defaultData(): AppData {
   return {
     version: 1,
     entries: [],
-    unlockedIds: SKINS.filter((skin) => skin.free)
-      .map((skin) => skin.id)
-      .concat(BACKGROUNDS.filter((background) => background.free).map((background) => background.id)),
+    unlockedIds: OUTFITS.filter((outfit) => outfit.free).map((outfit) => outfit.id),
     activeSkinId: DEFAULT_SKIN_ID,
     activeBgId: DEFAULT_BG_ID,
   };
@@ -77,7 +67,7 @@ export function sanitizeData(value: unknown): AppData {
   const unlocked = new Set(base.unlockedIds);
   if (Array.isArray(raw.unlockedIds)) {
     for (const id of raw.unlockedIds) {
-      if (typeof id === "string" && (skinIds.has(id) || backgroundIds.has(id))) unlocked.add(id);
+      if (typeof id === "string" && outfitIds.has(id)) unlocked.add(id);
     }
   }
   const unlockedIds = [...unlocked];
@@ -85,7 +75,8 @@ export function sanitizeData(value: unknown): AppData {
   let activeBgId = typeof raw.activeBgId === "string" ? raw.activeBgId : base.activeBgId;
   if (!getSkin(activeSkinId) || !unlocked.has(activeSkinId)) activeSkinId = DEFAULT_SKIN_ID;
   if (!getBackground(activeBgId) || !unlocked.has(activeBgId)) activeBgId = DEFAULT_BG_ID;
-  return { version: 1, entries, unlockedIds, activeSkinId, activeBgId };
+  const outfitId = getSkin(activeSkinId) ? activeSkinId : DEFAULT_SKIN_ID;
+  return { version: 1, entries, unlockedIds, activeSkinId: outfitId, activeBgId: outfitId };
 }
 
 export function loadData(): AppData {

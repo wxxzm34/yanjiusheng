@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
-import { DEFAULT_BG_ID, DEFAULT_SKIN_ID, getBackground, getSkin, type BackgroundPack, type Skin } from "@/lib/packs";
+import { DEFAULT_BG_ID, DEFAULT_SKIN_ID, getBackground, getOutfit, getSkin, type BackgroundPack, type Skin } from "@/lib/packs";
 import { buildSample } from "@/lib/sample";
 import { normalizeCount } from "@/lib/quantity";
 import { STORAGE_KEY, createId, defaultData, loadData, persistData, sanitizeData } from "@/lib/storage";
@@ -20,8 +20,7 @@ type AppContextValue = {
   unlockedIds: string[];
   pendingPackId: string | null;
   downloadPack: (id: string) => void;
-  applySkin: (id: string) => void;
-  applyBackground: (id: string) => void;
+  applyOutfit: (id: string) => void;
   addSmoke: (mood: Mood | null, count?: number) => SmokeEntry;
   addDrink: (input: {
     mood: Mood | null;
@@ -142,16 +141,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
           );
         }, 700);
       },
-      applySkin: (id: string) => {
+      applyOutfit: (id: string) => {
         commit((prev) => {
-          if (!prev.unlockedIds.includes(id) || prev.activeSkinId === id) return prev;
-          return { ...prev, activeSkinId: id };
-        });
-      },
-      applyBackground: (id: string) => {
-        commit((prev) => {
-          if (!prev.unlockedIds.includes(id) || prev.activeBgId === id) return prev;
-          return { ...prev, activeBgId: id };
+          if (!getOutfit(id) || !prev.unlockedIds.includes(id)) return prev;
+          if (prev.activeSkinId === id && prev.activeBgId === id) return prev;
+          return { ...prev, activeSkinId: id, activeBgId: id };
         });
       },
       addSmoke: (mood: Mood | null, count = 1) => {

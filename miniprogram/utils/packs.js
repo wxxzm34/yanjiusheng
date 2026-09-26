@@ -1,54 +1,72 @@
-const SKINS = [
+const OUTFITS = [
   {
-    id: "skin-star",
-    name: "星焰",
-    blurb: "额头贴着一颗星，披肩像小毯子，激光是糖色的。",
+    id: "outfit-cool",
+    name: "冷酷风",
+    blurb: "深色、利落，冷蓝和灰，少一点装饰。",
+    free: false,
+    accent: "#8aa4bf",
+    heroBody: "#9bb0c4",
+    laser: "#b7c9db",
+    ink: "#e7eef6",
+    paper: "#121820",
+    from: "#0e141c",
+    to: "#243140",
+  },
+  {
+    id: "outfit-happy",
+    name: "快乐风格",
+    blurb: "明亮、暖和，颜色软一点，记起来轻松。",
     free: true,
     accent: "#ff5a36",
-    heroBody: "#ff5a36",
+    heroBody: "#ff7a45",
     laser: "#ff3b1f",
+    ink: "#2b2118",
+    paper: "#fff8f1",
+    from: "#ffd7a8",
+    to: "#fff6e4",
   },
   {
-    id: "skin-mint",
-    name: "薄荷汽球",
-    blurb: "绿色头盔，叶子徽章，跳起来才发射。",
+    id: "outfit-wild",
+    name: "癫狂时刻",
+    blurb: "对比很强，霓虹乱跳，适合特别疯的一刻。",
     free: false,
-    accent: "#1fa97a",
-    heroBody: "#1fa97a",
-    laser: "#3dd6a5",
-  },
-  {
-    id: "skin-moon",
-    name: "月灯",
-    blurb: "蹲得低低的，月亮徽章，光束偏紫。",
-    free: false,
-    accent: "#6c4ce2",
-    heroBody: "#4c3299",
-    laser: "#b388ff",
+    accent: "#ff2bd6",
+    heroBody: "#ff4d6d",
+    laser: "#00f0ff",
+    ink: "#fff6fb",
+    paper: "#160814",
+    from: "#120014",
+    to: "#3b0764",
   },
 ];
 
-const BACKGROUNDS = [
-  { id: "bg-lamp", name: "台灯角落", blurb: "暖暖的墙，一盏不肯睡的灯。", free: true, from: "#ffd7a8" },
-  { id: "bg-balcony", name: "晒被子的阳台", blurb: "有太阳、栏杆，还有一条花被子。", free: true, from: "#8fd3ef" },
-  { id: "bg-rain", name: "听雨窗台", blurb: "夜里下雨，窗子里还亮着一小块暖光。", free: false, from: "#14213d" },
-  { id: "bg-sakura", name: "樱花放学路", blurb: "粉路、圆树、掉下来的花瓣。", free: false, from: "#ffd0e0" },
-];
+const DEFAULT_OUTFIT_ID = "outfit-happy";
+
+function getOutfit(id) {
+  return OUTFITS.find((item) => item.id === id) || OUTFITS.find((item) => item.id === DEFAULT_OUTFIT_ID);
+}
 
 function getSkin(id) {
-  return SKINS.find((item) => item.id === id) || SKINS[0];
+  return getOutfit(id);
 }
 
 function getBackground(id) {
-  return BACKGROUNDS.find((item) => item.id === id) || BACKGROUNDS[0];
+  return getOutfit(id);
 }
 
 function paintChrome(data) {
-  const skin = getSkin(data.activeSkinId);
+  const skin = getSkin(data && data.activeSkinId);
   wx.setNavigationBarColor({
-    frontColor: "#ffffff",
+    frontColor: skin.id === "outfit-cool" ? "#000000" : "#ffffff",
     backgroundColor: skin.accent,
   });
 }
 
-module.exports = { SKINS, BACKGROUNDS, getSkin, getBackground, paintChrome };
+module.exports = {
+  OUTFITS,
+  DEFAULT_OUTFIT_ID,
+  getOutfit,
+  getSkin,
+  getBackground,
+  paintChrome,
+};

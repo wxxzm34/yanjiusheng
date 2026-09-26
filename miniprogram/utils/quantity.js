@@ -1,16 +1,22 @@
 const MAX_COUNT = 99;
-const MOODS = ["独酌明月", "会友欢饮", "闲坐静思", "乱我心忧"];
+const MOODS = ["平静", "开心", "难过"];
+const MOOD_EMOJI = {
+  平静: "😌",
+  开心: "😄",
+  难过: "😢",
+};
 const MOOD_COLORS = {
-  独酌明月: "#6ea8d9",
-  会友欢饮: "#f0a202",
-  闲坐静思: "#6a9a6a",
-  乱我心忧: "#c46b8a",
+  平静: "#5b8fa8",
+  开心: "#f0a202",
+  难过: "#c46b8a",
 };
 const UNSET_MOOD_COLOR = "#e6d5c3";
 const LEGACY_MOODS = {
-  开心: "会友欢饮",
-  无聊: "独酌明月",
-  难过: "乱我心忧",
+  无聊: "平静",
+  独酌明月: "平静",
+  闲坐静思: "平静",
+  会友欢饮: "开心",
+  乱我心忧: "难过",
 };
 
 function canonicalMood(value) {
@@ -42,6 +48,7 @@ function readCount(value) {
 module.exports = {
   MAX_COUNT,
   MOODS,
+  MOOD_EMOJI,
   MOOD_COLORS,
   UNSET_MOOD_COLOR,
   LEGACY_MOODS,

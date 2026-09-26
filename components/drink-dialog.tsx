@@ -101,7 +101,7 @@ function DrinkForm({
                 "h-11 rounded-2xl text-sm font-medium",
                 drinkType === type
                   ? "bg-[var(--skin-accent)] text-[var(--primary-foreground)]"
-                  : "bg-white text-[var(--skin-ink)] ring-1 ring-black/5",
+                  : "bg-white text-[#2b2118] ring-1 ring-black/5",
               )}
             >
               {type}

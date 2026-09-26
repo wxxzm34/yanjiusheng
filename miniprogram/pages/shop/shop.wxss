@@ -1,3 +1,9 @@
+.preview {
+  border-radius: 24rpx;
+  padding: 24rpx;
+  margin-bottom: 12rpx;
+}
+
 .swatch {
   width: 80rpx;
   height: 80rpx;

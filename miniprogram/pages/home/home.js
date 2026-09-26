@@ -1,5 +1,5 @@
 const { load, save, uid, buildSample, normalizeCount } = require("../../utils/storage");
-const { paintChrome, getSkin, getBackground } = require("../../utils/packs");
+const { paintChrome, getSkin, getBackground, DEFAULT_OUTFIT_ID } = require("../../utils/packs");
 const { filterToday, summarize, shareText, formatTime, drinkTitle } = require("../../utils/stats");
 
 const LASER_LINE = "「快乐加一，我代表山姆奥特曼消灭你生命0.5秒」";
@@ -16,8 +16,8 @@ function greeting() {
 Page({
   data: {
     greeting: greeting(),
-    skin: getSkin("skin-star"),
-    bg: getBackground("bg-lamp"),
+    skin: getSkin(DEFAULT_OUTFIT_ID),
+    bg: getBackground(DEFAULT_OUTFIT_ID),
     draftMood: "",
     linkFresh: false,
     freshId: "",
@@ -63,7 +63,7 @@ Page({
     if (!this.data.linkFresh || !this.data.freshId) return;
     const data = load();
     data.entries = data.entries.map((entry) =>
-      entry.id === this.data.freshId && entry.kind === "smoke" ? { ...entry, mood: mood || null } : entry,
+      entry.id === this.data.freshId ? { ...entry, mood: mood || null } : entry,
     );
     save(data);
     this.refresh();
@@ -111,7 +111,8 @@ Page({
     this.setData({ linkFresh: false });
   },
   goDrink() {
-    wx.navigateTo({ url: "/pages/drink/drink" });
+    const mood = this.data.draftMood ? `?mood=${encodeURIComponent(this.data.draftMood)}` : "";
+    wx.navigateTo({ url: `/pages/drink/drink${mood}` });
   },
   loadSample() {
     const data = load();

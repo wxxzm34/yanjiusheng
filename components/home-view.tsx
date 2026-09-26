@@ -52,8 +52,8 @@ export function HomeView() {
   function pickMood(mood: Mood | null) {
     setDraftMood(mood);
     if (!linked || !freshId) return;
-    const fresh = app.entries.find((entry) => entry.id === freshId && entry.kind === "smoke");
-    if (fresh && fresh.kind === "smoke") app.saveEntry({ ...fresh, mood });
+    const fresh = app.entries.find((entry) => entry.id === freshId);
+    if (fresh) app.saveEntry({ ...fresh, mood });
   }
 
   function logSmoke(count: number) {
@@ -77,7 +77,7 @@ export function HomeView() {
           <p className="font-display text-4xl leading-none text-[var(--skin-ink)]">烟酒生</p>
           <p className="mt-1 text-sm text-[var(--skin-ink)]/80">{greeting(new Date(now))}</p>
           <p className="mt-1 text-xs text-[var(--skin-ink)]/70" data-testid="active-style">
-            皮肤 · {app.skin.name}　背景 · {app.background.name}
+            装扮 · {app.skin.name}
           </p>
         </div>
         <Button
@@ -104,30 +104,6 @@ export function HomeView() {
           {drinks > 0 ? `还有 ${drinks} 杯酒` : "酒还没记"}
         </p>
 
-        <div className="mt-4">
-          <MoodPicker
-            prefix="draft"
-            value={draftMood}
-            onChange={pickMood}
-            label={
-              linked
-                ? freshCount > 1
-                  ? "正在改刚才这几支的心情，下一笔也会带上"
-                  : "正在改刚才那支的心情，下一支也会带上"
-                : "先选心情也行，不选直接记"
-            }
-          />
-          {linked && (
-            <button
-              type="button"
-              className="mt-2 text-sm underline decoration-dotted underline-offset-4"
-              onClick={() => setLinkFresh(false)}
-            >
-              {freshCount > 1 ? "刚才这几支就这样" : "刚才那支就这样"}
-            </button>
-          )}
-        </div>
-
         <div className="mt-4 grid gap-2">
           <div className="flex flex-wrap items-center gap-2">
             <button
@@ -144,7 +120,7 @@ export function HomeView() {
                 type="button"
                 data-testid="log-smoke-batch"
                 onClick={() => logSmoke(normalizeCount(smokeQty))}
-                className="sticker h-12 rounded-full bg-[var(--skin-ink)] px-4 text-base font-medium text-white"
+                className="sticker h-12 rounded-full bg-[var(--skin-ink)] px-4 text-base font-medium text-[var(--skin-paper)]"
               >
                 记录
               </button>
@@ -153,12 +129,30 @@ export function HomeView() {
           <Button
             type="button"
             variant="outline"
-            className="h-12! bg-white/80 text-base"
+            className="h-12! bg-white/80 text-base text-[#2b2118]"
             data-testid="log-drink"
             onClick={() => setDrinkOpen(true)}
           >
             记一杯
           </Button>
+        </div>
+
+        <div className="mt-4">
+          <MoodPicker
+            prefix="draft"
+            value={draftMood}
+            onChange={pickMood}
+            label={linked ? "点一下改刚才记下的心情，下一笔也会带上" : "点一下，下一笔记下时带上"}
+          />
+          {linked && (
+            <button
+              type="button"
+              className="mt-2 text-sm underline decoration-dotted underline-offset-4"
+              onClick={() => setLinkFresh(false)}
+            >
+              {freshCount > 1 ? "刚才这几笔就这样" : "刚才那笔就这样"}
+            </button>
+          )}
         </div>
       </section>
 
@@ -189,7 +183,7 @@ export function HomeView() {
                     <button
                       type="button"
                       onClick={() => setEditing(entry)}
-                      className="flex w-full items-center justify-between rounded-2xl bg-white/70 px-3 py-2 text-left text-sm"
+                      className="flex w-full items-center justify-between rounded-2xl bg-white/70 px-3 py-2 text-left text-sm text-[#2b2118]"
                     >
                       <span>
                         {formatTime(entry.at)} · {entry.kind === "smoke" ? "烟" : drinkTitle(entry)}
@@ -212,6 +206,10 @@ export function HomeView() {
         onOpenChange={setDrinkOpen}
         onSave={(input) => {
           const entry = app.addDrink(input);
+          setFreshId(entry.id);
+          setFreshCount(entry.count);
+          setLinkFresh(true);
+          setDraftMood(entry.mood);
           setNow(Date.now());
           setGag({
             nonce: Date.now(),

@@ -1,4 +1,4 @@
-const { SKINS, BACKGROUNDS } = require("./packs");
+const { OUTFITS, DEFAULT_OUTFIT_ID } = require("./packs");
 const { MOODS, canonicalMood, normalizeCount } = require("./quantity");
 
 const KEY = "yanjiusheng.v1";
@@ -8,9 +8,9 @@ function defaultData() {
   return {
     version: 1,
     entries: [],
-    unlockedIds: ["skin-star", "bg-lamp", "bg-balcony"],
-    activeSkinId: "skin-star",
-    activeBgId: "bg-lamp",
+    unlockedIds: [DEFAULT_OUTFIT_ID],
+    activeSkinId: DEFAULT_OUTFIT_ID,
+    activeBgId: DEFAULT_OUTFIT_ID,
   };
 }
 
@@ -21,8 +21,8 @@ function uid() {
 function sanitize(raw) {
   const base = defaultData();
   if (!raw || typeof raw !== "object") return base;
-  const skinIds = new Set(SKINS.map((item) => item.id));
-  const bgIds = new Set(BACKGROUNDS.map((item) => item.id));
+  const skinIds = new Set(OUTFITS.map((item) => item.id));
+  const bgIds = skinIds;
   const unlocked = new Set(base.unlockedIds);
   (raw.unlockedIds || []).forEach((id) => {
     if (skinIds.has(id) || bgIds.has(id)) unlocked.add(id);
@@ -50,14 +50,15 @@ function sanitize(raw) {
   });
   let activeSkinId = skinIds.has(raw.activeSkinId) ? raw.activeSkinId : base.activeSkinId;
   let activeBgId = bgIds.has(raw.activeBgId) ? raw.activeBgId : base.activeBgId;
-  if (!unlocked.has(activeSkinId)) activeSkinId = "skin-star";
-  if (!unlocked.has(activeBgId)) activeBgId = "bg-lamp";
+  if (!unlocked.has(activeSkinId)) activeSkinId = DEFAULT_OUTFIT_ID;
+  if (!unlocked.has(activeBgId)) activeBgId = DEFAULT_OUTFIT_ID;
+  const outfitId = skinIds.has(activeSkinId) ? activeSkinId : DEFAULT_OUTFIT_ID;
   return {
     version: 1,
     entries,
     unlockedIds: Array.from(unlocked),
-    activeSkinId,
-    activeBgId,
+    activeSkinId: outfitId,
+    activeBgId: outfitId,
   };
 }
 
@@ -104,14 +105,14 @@ function buildSample(now) {
     count: 1,
   });
   return [
-    smoke(0, 9, 12, "独酌明月"),
-    smoke(0, 15, 40, "会友欢饮"),
-    drink(0, 19, 5, "会友欢饮", "啤酒", "阳台"),
-    smoke(1, 21, 18, "乱我心忧"),
-    drink(1, 20, 2, "闲坐静思", "红酒", "厨房"),
-    smoke(35, 20, 12, "独酌明月"),
-    drink(38, 18, 18, "乱我心忧", "黄酒", "家里"),
-    drink(100, 19, 16, "会友欢饮", "其他", "露台", "桂花酿"),
+    smoke(0, 9, 12, "平静"),
+    smoke(0, 15, 40, "开心"),
+    drink(0, 19, 5, "开心", "啤酒", "阳台"),
+    smoke(1, 21, 18, "难过"),
+    drink(1, 20, 2, "平静", "红酒", "厨房"),
+    smoke(35, 20, 12, "平静"),
+    drink(38, 18, 18, "难过", "黄酒", "家里"),
+    drink(100, 19, 16, "开心", "其他", "露台", "桂花酿"),
   ];
 }
 

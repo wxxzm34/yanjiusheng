@@ -14,7 +14,7 @@ export function QuantityStepper({
   const current = normalizeCount(value);
 
   return (
-    <div className="flex items-center rounded-full bg-white/80 p-1 ring-1 ring-black/5">
+    <div className="flex items-center rounded-full bg-white/80 p-1 text-[#2b2118] ring-1 ring-black/5">
       <button
         type="button"
         aria-label="减少"

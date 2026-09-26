@@ -1,11 +1,16 @@
-export const MOODS = ["独酌明月", "会友欢饮", "闲坐静思", "乱我心忧"] as const;
+export const MOODS = ["平静", "开心", "难过"] as const;
 export type Mood = (typeof MOODS)[number];
 
+export const MOOD_EMOJI: Record<Mood, string> = {
+  平静: "😌",
+  开心: "😄",
+  难过: "😢",
+};
+
 export const MOOD_COLORS: Record<Mood, string> = {
-  独酌明月: "#6ea8d9",
-  会友欢饮: "#f0a202",
-  闲坐静思: "#6a9a6a",
-  乱我心忧: "#c46b8a",
+  平静: "#5b8fa8",
+  开心: "#f0a202",
+  难过: "#c46b8a",
 };
 
 export const UNSET_MOOD_COLOR = "#e6d5c3";

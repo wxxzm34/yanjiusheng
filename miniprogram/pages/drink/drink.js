@@ -1,4 +1,4 @@
-const { load, save, uid, DRINKS, normalizeCount } = require("../../utils/storage");
+const { load, save, uid, DRINKS, normalizeCount, canonicalMood } = require("../../utils/storage");
 const { paintChrome } = require("../../utils/packs");
 
 const LINES = {
@@ -17,6 +17,10 @@ Page({
     location: "",
     mood: "",
     qty: "1",
+  },
+  onLoad(query) {
+    const mood = canonicalMood(query && query.mood);
+    if (mood) this.setData({ mood });
   },
   onShow() {
     paintChrome(load());
