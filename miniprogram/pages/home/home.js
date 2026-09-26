@@ -4,6 +4,14 @@ const { filterToday, summarize, shareText, formatTime, drinkTitle } = require(".
 
 const LASER_LINE = "「快乐加一，我代表山姆奥特曼消灭你生命0.5秒」";
 
+function mixHex(hex, toward, amount) {
+  const raw = String(hex || "#fff8f1").replace("#", "");
+  const channels = [0, 2, 4].map((index) => parseInt(raw.slice(index, index + 2), 16));
+  const target = toward === "white" ? 255 : 0;
+  const mixed = channels.map((channel) => Math.round(channel + (target - channel) * amount));
+  return `#${mixed.map((channel) => channel.toString(16).padStart(2, "0")).join("")}`;
+}
+
 function greeting() {
   const hour = new Date().getHours();
   if (hour < 5) return "夜深了，醒着就轻轻记一笔";
@@ -22,7 +30,11 @@ Page({
     linkFresh: false,
     freshId: "",
     freshCount: 1,
+    selected: "smoke",
     smokeQty: "1",
+    drinkQty: "1",
+    cardIdle: "#fff9f6",
+    cardOn: "#b3aea8",
     gag: false,
     gagText: "",
     smokeCount: 0,
@@ -49,13 +61,31 @@ Page({
       };
     });
     const summary = summarize(today);
+    const skin = getSkin(data.activeSkinId);
+    const pending = this._drinkSaved;
+    this._drinkSaved = null;
+    const extra = pending
+      ? {
+          drinkQty: "1",
+          freshId: pending.id,
+          freshCount: pending.count,
+          linkFresh: true,
+          draftMood: pending.mood || this.data.draftMood,
+        }
+      : {};
     this.setData({
-      skin: getSkin(data.activeSkinId),
+      skin,
       bg: getBackground(data.activeBgId),
+      cardIdle: mixHex(skin.paper, "white", 0.16),
+      cardOn: mixHex(skin.paper, "black", 0.3),
       today,
       smokeCount: summary.smokes,
       drinkCount: summary.drinks,
+      ...extra,
     });
+  },
+  markDrinkSaved(info) {
+    this._drinkSaved = info;
   },
   onMood(event) {
     const mood = event.detail.mood;
@@ -69,13 +99,23 @@ Page({
     this.refresh();
     this.setData({ draftMood: mood, linkFresh: true, freshId: this.data.freshId });
   },
+  selectSmoke() {
+    this.setData({ selected: "smoke" });
+  },
+  selectDrink() {
+    this.setData({ selected: "drink" });
+  },
   onSmokeQty(event) {
-    this.setData({ smokeQty: event.detail.value });
+    this.setData({ smokeQty: event.detail.value, selected: "smoke" });
   },
-  logSmoke() {
-    this.writeSmoke(1);
+  onDrinkQty(event) {
+    this.setData({ drinkQty: event.detail.value, selected: "drink" });
   },
-  logSmokeBatch() {
+  record() {
+    if (this.data.selected === "drink") {
+      this.goDrink();
+      return;
+    }
     this.writeSmoke(this.data.smokeQty);
   },
   writeSmoke(count) {
@@ -96,7 +136,7 @@ Page({
       freshId: entry.id,
       freshCount: safe,
       linkFresh: true,
-      smokeQty: safe > 1 ? "1" : String(normalizeCount(this.data.smokeQty)),
+      smokeQty: "1",
       gag: true,
       gagText: LASER_LINE,
       draftMood: this.data.draftMood,
@@ -111,8 +151,9 @@ Page({
     this.setData({ linkFresh: false });
   },
   goDrink() {
-    const mood = this.data.draftMood ? `?mood=${encodeURIComponent(this.data.draftMood)}` : "";
-    wx.navigateTo({ url: `/pages/drink/drink${mood}` });
+    const qty = normalizeCount(this.data.drinkQty);
+    const mood = this.data.draftMood ? `&mood=${encodeURIComponent(this.data.draftMood)}` : "";
+    wx.navigateTo({ url: `/pages/drink/drink?qty=${qty}${mood}` });
   },
   loadSample() {
     const data = load();

@@ -21,12 +21,14 @@ import { cn } from "cn";
 export function DrinkDialog({
   open,
   draftMood,
+  initialCount = 1,
   recentLocations,
   onOpenChange,
   onSave,
 }: {
   open: boolean;
   draftMood: Mood | null;
+  initialCount?: number;
   recentLocations: string[];
   onOpenChange: (open: boolean) => void;
   onSave: (input: {
@@ -43,6 +45,7 @@ export function DrinkDialog({
         {open && (
           <DrinkForm
             draftMood={draftMood}
+            initialCount={initialCount}
             recentLocations={recentLocations}
             onSave={(input) => {
               onSave(input);
@@ -57,10 +60,12 @@ export function DrinkDialog({
 
 function DrinkForm({
   draftMood,
+  initialCount,
   recentLocations,
   onSave,
 }: {
   draftMood: Mood | null;
+  initialCount: number;
   recentLocations: string[];
   onSave: (input: {
     mood: Mood | null;
@@ -71,7 +76,7 @@ function DrinkForm({
   }) => void;
 }) {
   const [drinkType, setDrinkType] = useState<DrinkType>("啤酒");
-  const [qty, setQty] = useState("1");
+  const [qty, setQty] = useState(() => String(normalizeCount(initialCount)));
   const [drinkLabel, setDrinkLabel] = useState("");
   const [location, setLocation] = useState("");
   const [mood, setMood] = useState<Mood | null>(draftMood);

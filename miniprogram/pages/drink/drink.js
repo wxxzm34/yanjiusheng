@@ -20,7 +20,9 @@ Page({
   },
   onLoad(query) {
     const mood = canonicalMood(query && query.mood);
-    if (mood) this.setData({ mood });
+    const next = { qty: String(normalizeCount(query && query.qty)) };
+    if (mood) next.mood = mood;
+    this.setData(next);
   },
   onShow() {
     paintChrome(load());
@@ -45,8 +47,9 @@ Page({
     const drinkType = this.data.drinkType;
     const count = normalizeCount(this.data.qty);
     const drinkLabel = drinkType === "其他" ? (this.data.drinkLabel || "").trim().slice(0, 12) || "其他" : drinkType;
+    const id = uid();
     data.entries.unshift({
-      id: uid(),
+      id,
       kind: "drink",
       at: Date.now(),
       mood: this.data.mood || null,
@@ -56,6 +59,9 @@ Page({
       count,
     });
     save(data);
+    const pages = getCurrentPages();
+    const prev = pages[pages.length - 2];
+    if (prev && prev.markDrinkSaved) prev.markDrinkSaved({ id, count, mood: this.data.mood || "" });
     const line = drinkType === "其他" ? `这杯叫${drinkLabel}，先记下。` : LINES[drinkType];
     wx.showToast({ title: line, icon: "none", duration: 1800 });
     setTimeout(() => wx.navigateBack(), 400);

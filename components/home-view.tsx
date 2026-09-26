@@ -15,13 +15,26 @@ import { drinkTitle } from "@/lib/stats";
 import { currentPeriod, formatTime, greeting } from "@/lib/time";
 import { startOfDay } from "@/lib/time";
 import type { Entry, Mood } from "@/lib/types";
+import { cn } from "cn";
+
+type LogKind = "smoke" | "drink";
+
+function mixHex(hex: string, toward: "white" | "black", amount: number) {
+  const raw = hex.replace("#", "");
+  const channels = [0, 2, 4].map((index) => Number.parseInt(raw.slice(index, index + 2), 16));
+  const target = toward === "white" ? 255 : 0;
+  const mixed = channels.map((channel) => Math.round(channel + (target - channel) * amount));
+  return `#${mixed.map((channel) => channel.toString(16).padStart(2, "0")).join("")}`;
+}
 
 export function HomeView() {
   const app = useApp();
   const [draftMood, setDraftMood] = useState<Mood | null>(null);
   const [freshId, setFreshId] = useState<string | null>(null);
   const [freshCount, setFreshCount] = useState(1);
+  const [kind, setKind] = useState<LogKind>("smoke");
   const [smokeQty, setSmokeQty] = useState("1");
+  const [drinkQty, setDrinkQty] = useState("1");
   const [linkFresh, setLinkFresh] = useState(false);
   const [gag, setGag] = useState<Gag>(null);
   const [drinkOpen, setDrinkOpen] = useState(false);
@@ -64,11 +77,21 @@ export function HomeView() {
     setLinkFresh(true);
     setNow(Date.now());
     setGag({ nonce: Date.now(), type: "smoke" });
-    setSmokeQty(safe > 1 ? "1" : String(normalizeCount(smokeQty)));
+    setSmokeQty("1");
     if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") navigator.vibrate(12);
   }
 
+  function record() {
+    if (kind === "drink") {
+      setDrinkOpen(true);
+      return;
+    }
+    logSmoke(normalizeCount(smokeQty));
+  }
+
   const period = currentPeriod(new Date(now));
+  const cardIdle = mixHex(app.skin.paper, "white", 0.16);
+  const cardOn = mixHex(app.skin.paper, "black", 0.3);
 
   return (
     <div className="px-4 pt-5">
@@ -92,50 +115,73 @@ export function HomeView() {
 
       <CartoonStage skin={app.skin} gag={gag} onSkip={() => setGag(null)} />
 
-      <section className="paper-card relative z-10 -mt-6 rounded-[28px] p-4">
-        <p className="text-sm">今天</p>
-        <p className="mt-1 font-display text-5xl leading-none" aria-live="polite">
-          <span key={smokes} data-testid="today-smoke-count" className="count-pop inline-block">
-            {smokes}
-          </span>
-          <span className="ml-2 text-2xl">支烟</span>
-        </p>
-        <p className="mt-2 text-sm" data-testid="today-drink-count">
-          {drinks > 0 ? `还有 ${drinks} 杯酒` : "酒还没记"}
-        </p>
-
-        <div className="mt-4 grid gap-2">
-          <div className="flex flex-wrap items-center gap-2">
+      <section className="relative z-10 -mt-6" data-selected={kind}>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
             <button
               type="button"
-              data-testid="log-smoke"
-              onClick={() => logSmoke(1)}
-              className="sticker h-14 min-w-28 flex-1 rounded-full bg-[var(--skin-accent)] text-lg font-medium text-[var(--primary-foreground)]"
+              data-testid="select-smoke"
+              aria-pressed={kind === "smoke"}
+              onClick={() => setKind("smoke")}
+              style={{ background: kind === "smoke" ? cardOn : cardIdle, color: "var(--skin-ink)" }}
+              className="w-full rounded-3xl px-3 py-4 text-left shadow-sm"
             >
-              记一支
+              <p className="font-display text-4xl leading-none" aria-live="polite">
+                <span key={smokes} data-testid="today-smoke-count" className="count-pop inline-block">
+                  {smokes}
+                </span>
+                <span className="ml-1 text-lg">支烟</span>
+              </p>
+              <p className="mt-2 text-base font-medium">记一支</p>
             </button>
-            <div className="flex items-center gap-2">
-              <QuantityStepper value={smokeQty} onChange={setSmokeQty} testId="smoke-qty" />
-              <button
-                type="button"
-                data-testid="log-smoke-batch"
-                onClick={() => logSmoke(normalizeCount(smokeQty))}
-                className="sticker h-12 rounded-full bg-[var(--skin-ink)] px-4 text-base font-medium text-[var(--skin-paper)]"
-              >
-                记录
-              </button>
+            <div className={cn("mt-2 flex justify-center", kind !== "smoke" && "opacity-40")}>
+              <QuantityStepper
+                value={smokeQty}
+                testId="smoke-qty"
+                onChange={(value) => {
+                  setKind("smoke");
+                  setSmokeQty(value);
+                }}
+              />
             </div>
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            className="h-12! bg-white/80 text-base text-[#2b2118]"
-            data-testid="log-drink"
-            onClick={() => setDrinkOpen(true)}
-          >
-            记一杯
-          </Button>
+          <div>
+            <button
+              type="button"
+              data-testid="select-drink"
+              aria-pressed={kind === "drink"}
+              onClick={() => setKind("drink")}
+              style={{ background: kind === "drink" ? cardOn : cardIdle, color: "var(--skin-ink)" }}
+              className="w-full rounded-3xl px-3 py-4 text-left shadow-sm"
+            >
+              <p className="font-display text-4xl leading-none" aria-live="polite">
+                <span key={drinks} data-testid="today-drink-count" className="count-pop inline-block">
+                  {drinks}
+                </span>
+                <span className="ml-1 text-lg">杯酒</span>
+              </p>
+              <p className="mt-2 text-base font-medium">记一杯</p>
+            </button>
+            <div className={cn("mt-2 flex justify-center", kind !== "drink" && "opacity-40")}>
+              <QuantityStepper
+                value={drinkQty}
+                testId="drink-qty"
+                onChange={(value) => {
+                  setKind("drink");
+                  setDrinkQty(value);
+                }}
+              />
+            </div>
+          </div>
         </div>
+        <button
+          type="button"
+          data-testid="log-record"
+          onClick={record}
+          className="sticker mt-3 h-12 w-full rounded-full bg-[var(--skin-accent)] text-base font-medium text-[var(--primary-foreground)]"
+        >
+          记录
+        </button>
 
         <div className="mt-4">
           <MoodPicker
@@ -160,7 +206,7 @@ export function HomeView() {
         {today.length === 0 ? (
           <div className="paper-card rounded-3xl p-4" data-testid="home-empty">
             <p className="font-display text-2xl">今天还是空白的</p>
-            <p className="mt-1 text-sm leading-6 opacity-80">点上面记一支，或者先记一杯。不想从零开始的话，可以塞一段示例。</p>
+            <p className="mt-1 text-sm leading-6 opacity-80">先选烟或酒，再点记录。不想从零开始的话，可以塞一段示例。</p>
             <div className="mt-3">
               <DataActions clear={false} />
             </div>
@@ -202,6 +248,7 @@ export function HomeView() {
       <DrinkDialog
         open={drinkOpen}
         draftMood={draftMood}
+        initialCount={normalizeCount(drinkQty)}
         recentLocations={recentLocations}
         onOpenChange={setDrinkOpen}
         onSave={(input) => {
@@ -210,6 +257,7 @@ export function HomeView() {
           setFreshCount(entry.count);
           setLinkFresh(true);
           setDraftMood(entry.mood);
+          setDrinkQty("1");
           setNow(Date.now());
           setGag({
             nonce: Date.now(),
