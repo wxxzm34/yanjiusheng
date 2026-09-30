@@ -35,6 +35,8 @@ export type DrinkEntry = {
   drinkLabel: string;
   location: string;
   count: number;
+  /** 白酒：ml 表示毫升。没有这个字段，或是 cup，表示原来按杯记下的数量。 */
+  unit?: "ml" | "cup";
 };
 
 export type Entry = SmokeEntry | DrinkEntry;

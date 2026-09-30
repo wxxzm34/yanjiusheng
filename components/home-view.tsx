@@ -10,8 +10,8 @@ import { EntryEditor } from "@/components/entry-editor";
 import { MoodPicker } from "@/components/mood-picker";
 import { QuantityStepper } from "@/components/quantity-stepper";
 import { Button } from "@/components/ui/button";
-import { normalizeCount } from "@/lib/quantity";
-import { drinkTitle } from "@/lib/stats";
+import { isBaijiuMl, normalizeCount, normalizeMl } from "@/lib/quantity";
+import { drinkAmountText, drinkTitle } from "@/lib/stats";
 import { currentPeriod, formatTime, greeting } from "@/lib/time";
 import { startOfDay } from "@/lib/time";
 import type { Entry, Mood } from "@/lib/types";
@@ -49,7 +49,14 @@ export function HomeView() {
     [app.entries, now],
   );
   const smokes = today.reduce((sum, entry) => sum + (entry.kind === "smoke" ? entry.count : 0), 0);
-  const drinks = today.reduce((sum, entry) => sum + (entry.kind === "drink" ? entry.count : 0), 0);
+  const drinks = today.reduce(
+    (sum, entry) => sum + (entry.kind === "drink" && !isBaijiuMl(entry) ? normalizeCount(entry.count) : 0),
+    0,
+  );
+  const baijiuMl = today.reduce(
+    (sum, entry) => sum + (entry.kind === "drink" && isBaijiuMl(entry) ? normalizeMl(entry.count) : 0),
+    0,
+  );
   const recentLocations = useMemo(() => {
     const seen = new Set<string>();
     const list: string[] = [];
@@ -160,6 +167,7 @@ export function HomeView() {
                 </span>
                 <span className="ml-1 text-lg">杯酒</span>
               </p>
+              {baijiuMl > 0 ? <p className="mt-1 text-sm">用量 {baijiuMl} 毫升</p> : null}
               <p className="mt-2 text-base font-medium">记一杯</p>
             </button>
             <div className={cn("mt-2 flex justify-center", kind !== "drink" && "opacity-40")}>
@@ -233,7 +241,11 @@ export function HomeView() {
                     >
                       <span>
                         {formatTime(entry.at)} · {entry.kind === "smoke" ? "烟" : drinkTitle(entry)}
-                        {entry.count > 1 ? ` ×${entry.count}` : ""}
+                        {entry.kind === "drink" && drinkAmountText(entry)
+                          ? ` · ${drinkAmountText(entry)}`
+                          : entry.count > 1
+                            ? ` ×${entry.count}`
+                            : ""}
                         {entry.kind === "drink" && entry.location ? ` · ${entry.location}` : ""}
                       </span>
                       <span>{entry.mood ?? "未选"}</span>
@@ -254,7 +266,7 @@ export function HomeView() {
         onSave={(input) => {
           const entry = app.addDrink(input);
           setFreshId(entry.id);
-          setFreshCount(entry.count);
+          setFreshCount(entry.unit === "ml" ? 1 : entry.count);
           setLinkFresh(true);
           setDraftMood(entry.mood);
           setDrinkQty("1");

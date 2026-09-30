@@ -7,7 +7,7 @@
   </view>
   <block wx:for="{{groups}}" wx:key="day">
     <view class="card">
-      <view>{{item.label}} · {{item.smokes}} 支烟 · {{item.drinks}} 杯酒</view>
+      <view>{{item.label}} · {{item.smokes}} 支烟 · {{item.drinks}} 杯酒{{item.baijiuMl ? ' · 用量 ' + item.baijiuMl + ' 毫升' : ''}}</view>
       <view class="row" wx:for="{{item.entries}}" wx:for-item="entry" wx:key="id">
         <view>
           <view>{{entry.timeText}} · {{entry.title}}</view>

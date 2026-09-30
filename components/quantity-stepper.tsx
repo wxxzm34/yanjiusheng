@@ -1,17 +1,19 @@
 "use client";
 
-import { MAX_COUNT, normalizeCount } from "@/lib/quantity";
+import { MAX_COUNT, normalizeAmount } from "@/lib/quantity";
 
 export function QuantityStepper({
   value,
   onChange,
   testId,
+  max = MAX_COUNT,
 }: {
   value: string;
   onChange: (value: string) => void;
   testId: string;
+  max?: number;
 }) {
-  const current = normalizeCount(value);
+  const current = normalizeAmount(value, max);
 
   return (
     <div className="flex items-center rounded-full bg-white/80 p-1 text-[#2b2118] ring-1 ring-black/5">
@@ -35,7 +37,7 @@ export function QuantityStepper({
           if (next !== "" && !/^\d{1,3}$/.test(next)) return;
           onChange(next);
         }}
-        onBlur={() => onChange(String(normalizeCount(value)))}
+        onBlur={() => onChange(String(normalizeAmount(value, max)))}
         className="h-10 w-12 bg-transparent text-center text-base font-medium outline-none"
       />
       <button
@@ -43,8 +45,8 @@ export function QuantityStepper({
         aria-label="增加"
         data-testid={`${testId}-plus`}
         className="size-10 rounded-full text-lg leading-none disabled:opacity-35"
-        disabled={current >= MAX_COUNT}
-        onClick={() => onChange(String(Math.min(MAX_COUNT, current + 1)))}
+        disabled={current >= max}
+        onClick={() => onChange(String(Math.min(max, current + 1)))}
       >
         ＋
       </button>

@@ -1,5 +1,5 @@
 const { OUTFITS, DEFAULT_OUTFIT_ID } = require("./packs");
-const { MOODS, canonicalMood, normalizeCount } = require("./quantity");
+const { MOODS, canonicalMood, normalizeCount, normalizeMl } = require("./quantity");
 
 const KEY = "yanjiusheng.v1";
 const DRINKS = ["红酒", "白酒", "啤酒", "家酿", "黄酒", "其他"];
@@ -31,13 +31,13 @@ function sanitize(raw) {
   (raw.entries || []).forEach((item) => {
     if (!item || typeof item.id !== "string" || typeof item.at !== "number") return;
     const mood = canonicalMood(item.mood);
-    const count = normalizeCount(item.count);
     if (item.kind === "smoke") {
-      entries.push({ id: item.id, kind: "smoke", at: item.at, mood, count });
+      entries.push({ id: item.id, kind: "smoke", at: item.at, mood, count: normalizeCount(item.count) });
       return;
     }
     if (item.kind !== "drink" || DRINKS.indexOf(item.drinkType) < 0) return;
-    entries.push({
+    const volume = item.drinkType === "白酒" && item.unit === "ml";
+    const drink = {
       id: item.id,
       kind: "drink",
       at: item.at,
@@ -45,8 +45,10 @@ function sanitize(raw) {
       drinkType: item.drinkType,
       drinkLabel: String(item.drinkLabel || item.drinkType).slice(0, 12),
       location: String(item.location || "").slice(0, 24),
-      count,
-    });
+      count: volume ? normalizeMl(item.count) : normalizeCount(item.count),
+    };
+    if (item.drinkType === "白酒") drink.unit = volume ? "ml" : "cup";
+    entries.push(drink);
   });
   let activeSkinId = skinIds.has(raw.activeSkinId) ? raw.activeSkinId : base.activeSkinId;
   let activeBgId = bgIds.has(raw.activeBgId) ? raw.activeBgId : base.activeBgId;

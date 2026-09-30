@@ -2,6 +2,8 @@ import type { Mood } from "@/lib/types";
 import { MOODS } from "@/lib/types";
 
 export const MAX_COUNT = 99;
+export const MAX_ML = 999;
+export const DEFAULT_BAIJIU_ML = 50;
 
 const moodSet = new Set<string>(MOODS);
 
@@ -21,11 +23,23 @@ export function canonicalMood(value: unknown): Mood | null {
   return LEGACY_MOODS[text] ?? null;
 }
 
-export function normalizeCount(value: unknown): number {
+export function normalizeAmount(value: unknown, max: number): number {
   const parsed = readCount(value);
   if (parsed < 1) return 1;
-  if (parsed > MAX_COUNT) return MAX_COUNT;
+  if (parsed > max) return max;
   return parsed;
+}
+
+export function normalizeCount(value: unknown): number {
+  return normalizeAmount(value, MAX_COUNT);
+}
+
+export function normalizeMl(value: unknown): number {
+  return normalizeAmount(value, MAX_ML);
+}
+
+export function isBaijiuMl(entry: { kind?: string; drinkType?: string; unit?: string }): boolean {
+  return entry.kind !== "smoke" && entry.drinkType === "白酒" && entry.unit === "ml";
 }
 
 function readCount(value: unknown): number {

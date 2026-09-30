@@ -1,5 +1,5 @@
 import { DEFAULT_BG_ID, DEFAULT_SKIN_ID, OUTFITS, getBackground, getSkin } from "@/lib/packs";
-import { canonicalMood, normalizeCount } from "@/lib/quantity";
+import { canonicalMood, normalizeCount, normalizeMl } from "@/lib/quantity";
 import type { AppData, DrinkEntry, DrinkType, Entry, SmokeEntry } from "@/lib/types";
 import { DRINK_TYPES } from "@/lib/types";
 
@@ -31,8 +31,8 @@ function sanitizeEntry(value: unknown): Entry | null {
   if (typeof item.id !== "string" || !item.id) return null;
   if (typeof item.at !== "number" || !Number.isFinite(item.at)) return null;
   const mood = canonicalMood(item.mood);
-  const count = normalizeCount(item.count);
   if (item.kind === "smoke") {
+    const count = normalizeCount(item.count);
     const entry: SmokeEntry = { id: item.id, kind: "smoke", at: item.at, mood, count };
     return entry;
   }
@@ -44,6 +44,7 @@ function sanitizeEntry(value: unknown): Entry | null {
       ? item.drinkLabel.trim().slice(0, 12)
       : drinkType;
   const location = typeof item.location === "string" ? item.location.trim().slice(0, 24) : "";
+  const volume = drinkType === "白酒" && item.unit === "ml";
   const entry: DrinkEntry = {
     id: item.id,
     kind: "drink",
@@ -52,8 +53,9 @@ function sanitizeEntry(value: unknown): Entry | null {
     drinkType,
     drinkLabel,
     location,
-    count,
+    count: volume ? normalizeMl(item.count) : normalizeCount(item.count),
   };
+  if (drinkType === "白酒") entry.unit = volume ? "ml" : "cup";
   return entry;
 }
 

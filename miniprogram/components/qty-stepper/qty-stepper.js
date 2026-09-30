@@ -1,8 +1,9 @@
-const { MAX_COUNT, normalizeCount } = require("../../utils/quantity");
+const { MAX_COUNT, normalizeAmount } = require("../../utils/quantity");
 
 Component({
   properties: {
     value: { type: String, value: "1" },
+    max: { type: Number, value: MAX_COUNT },
   },
   data: {
     text: "1",
@@ -28,16 +29,20 @@ Component({
       if (raw === "" || /^\d{1,3}$/.test(raw)) this.emit(raw);
       else this.emit(this.data.text);
     },
+    limit() {
+      const max = Number(this.data.max);
+      return max > 0 ? max : MAX_COUNT;
+    },
     onBlur() {
-      this.emit(String(normalizeCount(this.data.text)));
+      this.emit(String(normalizeAmount(this.data.text, this.limit())));
     },
     dec() {
-      const current = normalizeCount(this.data.text);
+      const current = normalizeAmount(this.data.text, this.limit());
       this.emit(String(Math.max(1, current - 1)));
     },
     inc() {
-      const current = normalizeCount(this.data.text);
-      this.emit(String(Math.min(MAX_COUNT, current + 1)));
+      const current = normalizeAmount(this.data.text, this.limit());
+      this.emit(String(Math.min(this.limit(), current + 1)));
     },
   },
 });

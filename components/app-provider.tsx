@@ -3,7 +3,7 @@
 import { createContext, useContext, useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
 import { DEFAULT_BG_ID, DEFAULT_SKIN_ID, getBackground, getOutfit, getSkin, type BackgroundPack, type Skin } from "@/lib/packs";
 import { buildSample } from "@/lib/sample";
-import { normalizeCount } from "@/lib/quantity";
+import { normalizeCount, normalizeMl } from "@/lib/quantity";
 import { STORAGE_KEY, createId, defaultData, loadData, persistData, sanitizeData } from "@/lib/storage";
 import type { AppData, DrinkEntry, DrinkType, Entry, Mood, ShareTarget, SmokeEntry } from "@/lib/types";
 
@@ -28,6 +28,7 @@ type AppContextValue = {
     drinkLabel: string;
     location: string;
     count?: number;
+    unit?: "ml" | "cup";
   }) => DrinkEntry;
   saveEntry: (entry: Entry) => void;
   deleteEntry: (id: string) => void;
@@ -162,6 +163,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       addDrink: (input) => {
         const label =
           input.drinkType === "其他" ? input.drinkLabel.trim().slice(0, 12) || "其他" : input.drinkType;
+        const volume = input.drinkType === "白酒";
         const entry: DrinkEntry = {
           id: createId(),
           kind: "drink",
@@ -170,7 +172,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
           drinkType: input.drinkType,
           drinkLabel: label,
           location: input.location.trim().slice(0, 24),
-          count: normalizeCount(input.count),
+          count: volume ? normalizeMl(input.count) : normalizeCount(input.count),
+          ...(volume ? { unit: "ml" as const } : {}),
         };
         commit((prev) => ({ ...prev, entries: [entry, ...prev.entries] }));
         return entry;

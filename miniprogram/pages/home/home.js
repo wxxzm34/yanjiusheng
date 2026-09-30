@@ -1,6 +1,7 @@
-const { load, save, uid, buildSample, normalizeCount } = require("../../utils/storage");
+const { load, save, uid, buildSample } = require("../../utils/storage");
 const { paintChrome, getSkin, getBackground, DEFAULT_OUTFIT_ID } = require("../../utils/packs");
 const { filterToday, summarize, shareText, formatTime, drinkTitle } = require("../../utils/stats");
+const { isBaijiuMl, normalizeCount, normalizeMl } = require("../../utils/quantity");
 
 const LASER_LINE = "「快乐加一，我代表山姆奥特曼消灭你生命0.5秒」";
 
@@ -39,6 +40,7 @@ Page({
     gagText: "",
     smokeCount: 0,
     drinkCount: 0,
+    baijiuMl: 0,
     today: [],
   },
   onShow() {
@@ -52,11 +54,16 @@ Page({
     paintChrome(data);
     const today = filterToday(data.entries).map((entry) => {
       const name = entry.kind === "smoke" ? "烟" : drinkTitle(entry);
-      const count = entry.count || 1;
+      const volume = isBaijiuMl(entry);
+      const count = volume ? normalizeMl(entry.count) : normalizeCount(entry.count);
+      let title = name;
+      if (volume) title = `${name} · 用量 ${count} 毫升`;
+      else if (entry.kind === "drink" && entry.drinkType === "白酒") title = `${name} · ${count} 杯`;
+      else if (count > 1) title = `${name} ×${count}`;
       return {
         ...entry,
         timeText: formatTime(entry.at),
-        title: count > 1 ? `${name} ×${count}` : name,
+        title,
         moodText: entry.mood || "未选",
       };
     });
@@ -81,6 +88,7 @@ Page({
       today,
       smokeCount: summary.smokes,
       drinkCount: summary.drinks,
+      baijiuMl: summary.baijiuMl,
       ...extra,
     });
   },
@@ -177,7 +185,7 @@ Page({
   shareToday() {
     const data = load();
     const summary = summarize(filterToday(data.entries));
-    if (!summary.smokes && !summary.drinks) {
+    if (!summary.smokes && !summary.drinks && !summary.baijiuMl) {
       wx.showToast({ title: "今天还是空的", icon: "none" });
       return;
     }

@@ -1,5 +1,6 @@
 <view class="wrap" wx:if="{{entry}}">
-  <view class="h1">{{entry.kind === 'smoke' ? '改这支烟' : '改这杯酒'}}</view>
+  <view class="h1">{{title}}</view>
+  <view wx:if="{{unitNote}}" class="muted">{{unitNote}}</view>
   <view class="muted">{{timeText}} 记下的。时间不动。</view>
   <view class="card">
     <mood-picker label="心情" value="{{mood}}" bind:change="onMood" />

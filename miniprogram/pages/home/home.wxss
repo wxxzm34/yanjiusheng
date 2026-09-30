@@ -21,6 +21,11 @@
   line-height: 1.2;
 }
 
+.choice-sub {
+  margin-top: 8rpx;
+  font-size: 24rpx;
+}
+
 .choice-name {
   margin-top: 10rpx;
   font-size: 28rpx;

@@ -31,6 +31,7 @@
         bindtap="selectDrink"
       >
         <view class="choice-count">{{drinkCount}} 杯酒</view>
+        <view wx:if="{{baijiuMl}}" class="choice-sub">用量 {{baijiuMl}} 毫升</view>
         <view class="choice-name">记一杯</view>
       </view>
       <view class="step-wrap {{selected === 'drink' ? '' : 'dim'}}" bindtap="selectDrink">

@@ -98,7 +98,12 @@ export function ReportView() {
             <EmptyReport body="这个月还没有留下痕迹。去记一笔，月报会自己长出来。" />
           ) : (
             <>
-              <Totals smokes={monthSummary.smokes} drinks={monthSummary.drinks} testId="month-smoke-total" />
+              <Totals
+                smokes={monthSummary.smokes}
+                drinks={monthSummary.drinks}
+                baijiuMl={monthSummary.baijiuMl}
+                testId="month-smoke-total"
+              />
               <DrinkMix summary={monthSummary} />
               <MoodMix summary={monthSummary} />
               <DayChart days={days} />
@@ -128,7 +133,12 @@ export function ReportView() {
             <EmptyReport body="这一年还是空的。记过的月份会出现在上面。" />
           ) : (
             <>
-              <Totals smokes={yearSummary.smokes} drinks={yearSummary.drinks} testId="year-smoke-total" />
+              <Totals
+                smokes={yearSummary.smokes}
+                drinks={yearSummary.drinks}
+                baijiuMl={yearSummary.baijiuMl}
+                testId="year-smoke-total"
+              />
               <YearChart points={monthsOfYear} />
               <DrinkMix summary={yearSummary} />
               <MoodMix summary={yearSummary} />
@@ -187,7 +197,17 @@ function PeriodChips({
   );
 }
 
-function Totals({ smokes, drinks, testId }: { smokes: number; drinks: number; testId: string }) {
+function Totals({
+  smokes,
+  drinks,
+  baijiuMl,
+  testId,
+}: {
+  smokes: number;
+  drinks: number;
+  baijiuMl: number;
+  testId: string;
+}) {
   return (
     <div className="grid grid-cols-2 gap-2">
       <div className="paper-card rounded-3xl p-4">
@@ -203,6 +223,7 @@ function Totals({ smokes, drinks, testId }: { smokes: number; drinks: number; te
           {drinks}
           <span className="ml-1 text-lg">杯</span>
         </p>
+        {baijiuMl > 0 ? <p className="mt-1 text-sm">用量 {baijiuMl} 毫升</p> : null}
       </div>
     </div>
   );
@@ -222,7 +243,16 @@ function DrinkMix({ summary }: { summary: ReturnType<typeof summarize> }) {
             <li key={item.type}>
               <div className="mb-1 flex justify-between text-sm">
                 <span>{item.type}</span>
-                <span>{item.count}</span>
+                <span>
+                  {item.type === "白酒"
+                    ? [
+                        item.count > 0 ? `${item.count} 杯` : null,
+                        item.ml > 0 ? `用量 ${item.ml} 毫升` : null,
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")
+                    : item.count}
+                </span>
               </div>
               <div className="h-2 overflow-hidden rounded-full bg-black/5">
                 <div

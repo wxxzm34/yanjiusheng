@@ -1,4 +1,6 @@
 const MAX_COUNT = 99;
+const MAX_ML = 999;
+const DEFAULT_BAIJIU_ML = 50;
 const MOODS = ["平静", "开心", "难过"];
 const MOOD_EMOJI = {
   平静: "😌",
@@ -27,11 +29,23 @@ function canonicalMood(value) {
   return LEGACY_MOODS[text] || null;
 }
 
-function normalizeCount(value) {
+function normalizeAmount(value, max) {
   const parsed = readCount(value);
   if (parsed < 1) return 1;
-  if (parsed > MAX_COUNT) return MAX_COUNT;
+  if (parsed > max) return max;
   return parsed;
+}
+
+function normalizeCount(value) {
+  return normalizeAmount(value, MAX_COUNT);
+}
+
+function normalizeMl(value) {
+  return normalizeAmount(value, MAX_ML);
+}
+
+function isBaijiuMl(entry) {
+  return Boolean(entry && entry.kind !== "smoke" && entry.drinkType === "白酒" && entry.unit === "ml");
 }
 
 function readCount(value) {
@@ -47,6 +61,11 @@ function readCount(value) {
 
 module.exports = {
   MAX_COUNT,
+  MAX_ML,
+  DEFAULT_BAIJIU_ML,
+  normalizeAmount,
+  normalizeMl,
+  isBaijiuMl,
   MOODS,
   MOOD_EMOJI,
   MOOD_COLORS,

@@ -1,6 +1,6 @@
 <view class="wrap">
-  <view class="h1">记一杯</view>
-  <view class="muted">种类要选，心情和地点随便。</view>
+  <view class="h1">{{drinkType === '白酒' ? '记白酒' : '记一杯'}}</view>
+  <view class="muted">{{drinkType === '白酒' ? '用量按毫升记，心情和地点随便。' : '种类要选，心情和地点随便。'}}</view>
   <view class="chips" style="margin-top: 24rpx;">
     <view
       wx:for="{{types}}"
@@ -12,12 +12,12 @@
   </view>
   <input wx:if="{{drinkType === '其他'}}" class="field" placeholder="这杯叫什么" maxlength="12" value="{{drinkLabel}}" bindinput="onLabel" />
   <view class="card">
-    <mood-picker label="这杯的心情" value="{{mood}}" bind:change="onMood" />
+    <mood-picker label="{{drinkType === '白酒' ? '心情' : '这杯的心情'}}" value="{{mood}}" bind:change="onMood" />
   </view>
   <input class="field" placeholder="在哪儿喝的，可以不填" maxlength="24" value="{{location}}" bindinput="onLocation" />
   <view class="card qty-card">
-    <view class="muted">几杯</view>
-    <qty-stepper value="{{qty}}" bind:change="onQty" />
+    <view class="muted">{{drinkType === '白酒' ? '用量 · 毫升' : '几杯'}}</view>
+    <qty-stepper value="{{qty}}" max="{{drinkType === '白酒' ? 999 : 99}}" bind:change="onQty" />
   </view>
   <button class="btn" bindtap="saveDrink">记下来</button>
 </view>

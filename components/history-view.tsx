@@ -13,8 +13,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { normalizeCount } from "@/lib/quantity";
-import { drinkTitle, groupByDay } from "@/lib/stats";
+import { isBaijiuMl, normalizeCount, normalizeMl } from "@/lib/quantity";
+import { drinkAmountText, drinkTitle, groupByDay } from "@/lib/stats";
 import { formatDayLabel, formatTime } from "@/lib/time";
 import type { Entry } from "@/lib/types";
 
@@ -49,13 +49,18 @@ export function HistoryView() {
               0,
             );
             const drinks = group.entries.reduce(
-              (sum, entry) => sum + (entry.kind === "drink" ? normalizeCount(entry.count) : 0),
+              (sum, entry) => sum + (entry.kind === "drink" && !isBaijiuMl(entry) ? normalizeCount(entry.count) : 0),
+              0,
+            );
+            const baijiuMl = group.entries.reduce(
+              (sum, entry) => sum + (entry.kind === "drink" && isBaijiuMl(entry) ? normalizeMl(entry.count) : 0),
               0,
             );
             return (
               <section key={group.day} className="paper-card rounded-3xl p-4">
                 <h2 className="font-medium">
                   {formatDayLabel(group.day)} · {smokes} 支烟 · {drinks} 杯酒
+                  {baijiuMl > 0 ? ` · 用量 ${baijiuMl} 毫升` : ""}
                 </h2>
                 <ul className="mt-3 space-y-2">
                   {group.entries.map((entry) => (
@@ -67,7 +72,11 @@ export function HistoryView() {
                       <button type="button" className="min-w-0 flex-1 text-left" onClick={() => setEditing(entry)}>
                         <p className="text-sm font-medium">
                           {formatTime(entry.at)} · {entry.kind === "smoke" ? "烟" : drinkTitle(entry)}
-                          {entry.count > 1 ? ` ×${entry.count}` : ""}
+                          {entry.kind === "drink" && drinkAmountText(entry)
+                            ? ` · ${drinkAmountText(entry)}`
+                            : entry.count > 1
+                              ? ` ×${entry.count}`
+                              : ""}
                         </p>
                         <p className="truncate text-xs opacity-70">
                           {entry.kind === "drink"
@@ -132,7 +141,13 @@ function DeleteConfirm({
           <DialogTitle>删掉这条？</DialogTitle>
           <DialogDescription>
             {formatTime(entry.at)} 的
-            {entry.count > 1 ? `${entry.count} ${entry.kind === "smoke" ? "支烟" : `杯${drinkTitle(entry)}`}` : entry.kind === "smoke" ? "烟" : drinkTitle(entry)}
+            {entry.kind === "drink" && drinkAmountText(entry)
+              ? `${drinkTitle(entry)} ${drinkAmountText(entry)}`
+              : entry.count > 1
+                ? `${entry.count} ${entry.kind === "smoke" ? "支烟" : `杯${drinkTitle(entry)}`}`
+                : entry.kind === "smoke"
+                  ? "烟"
+                  : drinkTitle(entry)}
             不会再算进支数。
           </DialogDescription>
         </DialogHeader>

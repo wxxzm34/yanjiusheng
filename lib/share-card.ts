@@ -1,5 +1,5 @@
 import type { BackgroundPack, Skin } from "@/lib/packs";
-import { drinkParts, moodParts, type Summary } from "@/lib/stats";
+import { drinkParts, formatDrinkPart, moodParts, type Summary } from "@/lib/stats";
 import { MOODS, MOOD_COLORS, UNSET_MOOD_COLOR } from "@/lib/types";
 
 export type CardModel = {
@@ -90,9 +90,11 @@ export function drawShareCard(
   ctx.fillText("杯酒", drinkX + drinkWidth + 16, 400);
 
   ctx.font = `400 26px ${bodyFont}`;
-  const drinkLine = drinkParts(summary)
-    .map((item) => `${item.type} ${item.count}`)
-    .join("  ·  ");
+  const drinkBits = drinkParts(summary).map((item) => formatDrinkPart(item));
+  if (summary.baijiuMl > 0 && !drinkBits.some((bit) => bit.includes("毫升"))) {
+    drinkBits.push(`用量 ${summary.baijiuMl} 毫升`);
+  }
+  const drinkLine = drinkBits.join("  ·  ");
   const moodLine = moodParts(summary).join("  ·  ");
   ctx.fillStyle = skin.ink;
   wrapText(ctx, drinkLine || "没有酒", 84, 500, width - 180, 36);

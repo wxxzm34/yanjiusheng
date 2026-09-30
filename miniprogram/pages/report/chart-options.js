@@ -1,4 +1,4 @@
-const { normalizeCount } = require("../../utils/quantity");
+const { isBaijiuMl, normalizeCount } = require("../../utils/quantity");
 
 const SMOKE = "#e25b3a";
 const DRINK = "#3c7d9e";
@@ -55,7 +55,7 @@ function windowFor(range, now) {
 }
 
 function bump(bucket, entry) {
-  if (!bucket || !entry) return;
+  if (!bucket || !entry || isBaijiuMl(entry)) return;
   const count = normalizeCount(entry.count);
   if (entry.kind === "smoke") bucket.smokes += count;
   else if (entry.kind === "drink") bucket.drinks += count;
@@ -111,14 +111,15 @@ function entryInRange(entry, range, now) {
   return day >= startOfDay(span.start).getTime() && day <= startOfDay(span.end).getTime();
 }
 
-function summaryLine(range, smokes, drinks) {
+function summaryLine(range, smokes, drinks, baijiuMl) {
   const prefix = {
     month: "本月",
     year: "本年",
     d7: "最近 7 天",
     d30: "最近 30 天",
   }[range];
-  return `${prefix}共抽烟 ${smokes} 根，喝酒 ${drinks} 两/杯`;
+  const volume = baijiuMl > 0 ? `，白酒用量 ${baijiuMl} 毫升` : "";
+  return `${prefix}共抽烟 ${smokes} 根，喝酒 ${drinks} 两/杯${volume}`;
 }
 
 function labelInterval(count) {

@@ -86,10 +86,12 @@ Page({
   refresh() {
     const now = new Date();
     const series = rangeSeries(this.entries, this.data.range, now);
+    const scoped = (this.entries || []).filter((entry) => entryInRange(entry, this.data.range, now));
+    const summary = summarize(scoped);
     this.series = series;
     this.setData(
       {
-        summaryText: summaryLine(this.data.range, series.smokeTotal, series.drinkTotal),
+        summaryText: summaryLine(this.data.range, series.smokeTotal, series.drinkTotal, summary.baijiuMl),
         mood: moodView(this.entries, this.data.range, now),
       },
       () => {
