@@ -72,6 +72,9 @@ export function HomeView() {
           <p className="mt-1 text-xs text-[var(--skin-ink)]/70" data-testid="active-style">
             皮肤 · {app.skin.name}　背景 · {app.background.name}
           </p>
+          <p className="mt-1 text-xs leading-5 text-[var(--skin-ink)]/70" data-testid="wechat-summary-note">
+            微信汇总在小程序里设置。
+          </p>
         </div>
         <Button
           type="button"

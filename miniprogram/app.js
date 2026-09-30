@@ -1,3 +1,10 @@
+const { scheduleEntrySync } = require("./utils/sync");
+
 App({
-  onLaunch() {},
+  onLaunch() {
+    scheduleEntrySync();
+  },
+  onShow() {
+    scheduleEntrySync();
+  },
 });

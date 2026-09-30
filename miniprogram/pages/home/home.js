@@ -113,6 +113,9 @@ Page({
     }
     run();
   },
+  goSummary() {
+    wx.navigateTo({ url: "/pages/summary/summary" });
+  },
   shareToday() {
     const data = load();
     const summary = summarize(filterToday(data.entries));
