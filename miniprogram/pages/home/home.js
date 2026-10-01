@@ -1,7 +1,7 @@
 const { load, save, uid, buildSample } = require("../../utils/storage");
 const { paintChrome, getSkin, getBackground, DEFAULT_OUTFIT_ID } = require("../../utils/packs");
 const { filterToday, summarize, shareText, formatTime, drinkTitle } = require("../../utils/stats");
-const { isBaijiuMl, normalizeCount, normalizeMl } = require("../../utils/quantity");
+const { isBaijiuMl, clampQty, normalizeCount, normalizeMl, MAX_COUNT } = require("../../utils/quantity");
 
 const LASER_LINE = "「快乐加一，我代表山姆奥特曼消灭你生命0.5秒」";
 
@@ -13,8 +13,8 @@ function mixHex(hex, toward, amount) {
   return `#${mixed.map((channel) => channel.toString(16).padStart(2, "0")).join("")}`;
 }
 
-function withStepper(saved, qty) {
-  return saved + Math.max(0, normalizeCount(qty) - 1);
+function draftQty(value) {
+  return clampQty(value, 0, MAX_COUNT);
 }
 
 function greeting() {
@@ -36,14 +36,12 @@ Page({
     freshId: "",
     freshCount: 1,
     selected: "smoke",
-    smokeQty: "1",
-    drinkQty: "1",
+    smokeQty: "0",
+    drinkQty: "0",
     cardIdle: "#fff9f6",
     cardOn: "#b3aea8",
     gag: false,
     gagText: "",
-    smokeSaved: 0,
-    drinkSaved: 0,
     smokeCount: 0,
     drinkCount: 0,
     baijiuMl: 0,
@@ -79,10 +77,10 @@ Page({
     const pending = this._drinkSaved;
     this._drinkSaved = null;
     const smokeQty = patch.smokeQty != null ? patch.smokeQty : this.data.smokeQty;
-    const drinkQty = pending ? "1" : this.data.drinkQty;
+    const drinkQty = pending ? "0" : this.data.drinkQty;
     const extra = pending
       ? {
-          drinkQty: "1",
+          drinkQty: "0",
           freshId: pending.id,
           freshCount: pending.count,
           linkFresh: true,
@@ -95,11 +93,9 @@ Page({
       cardIdle: mixHex(skin.paper, "white", 0.16),
       cardOn: mixHex(skin.paper, "black", 0.3),
       today,
-      smokeSaved: summary.smokes,
-      drinkSaved: summary.drinks,
       smokeQty,
-      smokeCount: withStepper(summary.smokes, smokeQty),
-      drinkCount: withStepper(summary.drinks, drinkQty),
+      smokeCount: draftQty(smokeQty),
+      drinkCount: draftQty(drinkQty),
       baijiuMl: summary.baijiuMl,
       ...extra,
     });
@@ -130,7 +126,7 @@ Page({
     this.setData({
       smokeQty,
       selected: "smoke",
-      smokeCount: withStepper(this.data.smokeSaved, smokeQty),
+      smokeCount: draftQty(smokeQty),
     });
   },
   onDrinkQty(event) {
@@ -138,15 +134,19 @@ Page({
     this.setData({
       drinkQty,
       selected: "drink",
-      drinkCount: withStepper(this.data.drinkSaved, drinkQty),
+      drinkCount: draftQty(drinkQty),
     });
   },
   record() {
     if (this.data.selected === "drink") {
-      this.goDrink();
+      const qty = draftQty(this.data.drinkQty);
+      if (qty < 1) return;
+      this.goDrink(qty);
       return;
     }
-    this.writeSmoke(this.data.smokeQty);
+    const qty = draftQty(this.data.smokeQty);
+    if (qty < 1) return;
+    this.writeSmoke(qty);
   },
   writeSmoke(count) {
     const safe = normalizeCount(count);
@@ -161,7 +161,7 @@ Page({
     data.entries.unshift(entry);
     save(data);
     if (this.timer) clearTimeout(this.timer);
-    this.refresh({ smokeQty: "1" });
+    this.refresh({ smokeQty: "0" });
     this.setData({
       freshId: entry.id,
       freshCount: safe,
@@ -179,8 +179,7 @@ Page({
   freezeMood() {
     this.setData({ linkFresh: false });
   },
-  goDrink() {
-    const qty = normalizeCount(this.data.drinkQty);
+  goDrink(qty) {
     const mood = this.data.draftMood ? `&mood=${encodeURIComponent(this.data.draftMood)}` : "";
     wx.navigateTo({ url: `/pages/drink/drink?qty=${qty}${mood}` });
   },

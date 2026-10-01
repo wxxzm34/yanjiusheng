@@ -29,11 +29,15 @@ function canonicalMood(value) {
   return LEGACY_MOODS[text] || null;
 }
 
-function normalizeAmount(value, max) {
-  const parsed = readCount(value);
-  if (parsed < 1) return 1;
+function clampQty(value, min, max) {
+  const parsed = parseDigits(value);
+  if (parsed == null || parsed < min) return min;
   if (parsed > max) return max;
   return parsed;
+}
+
+function normalizeAmount(value, max) {
+  return clampQty(value, 1, max);
 }
 
 function normalizeCount(value) {
@@ -48,14 +52,14 @@ function isBaijiuMl(entry) {
   return Boolean(entry && entry.kind !== "smoke" && entry.drinkType === "白酒" && entry.unit === "ml");
 }
 
-function readCount(value) {
+function parseDigits(value) {
   if (typeof value === "number") {
-    if (!Number.isFinite(value) || !Number.isInteger(value)) return 1;
+    if (!Number.isFinite(value) || !Number.isInteger(value)) return null;
     return value;
   }
-  if (typeof value !== "string") return 1;
+  if (typeof value !== "string") return null;
   const text = value.trim();
-  if (!/^\d+$/.test(text)) return 1;
+  if (!/^\d+$/.test(text)) return null;
   return Number(text);
 }
 
@@ -63,6 +67,7 @@ module.exports = {
   MAX_COUNT,
   MAX_ML,
   DEFAULT_BAIJIU_ML,
+  clampQty,
   normalizeAmount,
   normalizeMl,
   isBaijiuMl,

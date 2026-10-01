@@ -21,7 +21,7 @@
         <view class="choice-name">记一支</view>
       </view>
       <view class="step-wrap {{selected === 'smoke' ? '' : 'dim'}}" bindtap="selectSmoke">
-        <qty-stepper value="{{smokeQty}}" bind:change="onSmokeQty" />
+        <qty-stepper value="{{smokeQty}}" min="0" bind:change="onSmokeQty" />
       </view>
     </view>
     <view class="pick-col">
@@ -35,7 +35,7 @@
         <view class="choice-name">记一杯</view>
       </view>
       <view class="step-wrap {{selected === 'drink' ? '' : 'dim'}}" bindtap="selectDrink">
-        <qty-stepper value="{{drinkQty}}" bind:change="onDrinkQty" />
+        <qty-stepper value="{{drinkQty}}" min="0" bind:change="onDrinkQty" />
       </view>
     </view>
   </view>

@@ -10,7 +10,7 @@ import { EntryEditor } from "@/components/entry-editor";
 import { MoodPicker } from "@/components/mood-picker";
 import { QuantityStepper } from "@/components/quantity-stepper";
 import { Button } from "@/components/ui/button";
-import { isBaijiuMl, normalizeCount, normalizeMl } from "@/lib/quantity";
+import { MAX_COUNT, clampQty, isBaijiuMl, normalizeCount, normalizeMl } from "@/lib/quantity";
 import { drinkAmountText, drinkTitle } from "@/lib/stats";
 import { currentPeriod, formatTime, greeting } from "@/lib/time";
 import { startOfDay } from "@/lib/time";
@@ -33,8 +33,8 @@ export function HomeView() {
   const [freshId, setFreshId] = useState<string | null>(null);
   const [freshCount, setFreshCount] = useState(1);
   const [kind, setKind] = useState<LogKind>("smoke");
-  const [smokeQty, setSmokeQty] = useState("1");
-  const [drinkQty, setDrinkQty] = useState("1");
+  const [smokeQty, setSmokeQty] = useState("0");
+  const [drinkQty, setDrinkQty] = useState("0");
   const [linkFresh, setLinkFresh] = useState(false);
   const [gag, setGag] = useState<Gag>(null);
   const [drinkOpen, setDrinkOpen] = useState(false);
@@ -48,17 +48,12 @@ export function HomeView() {
     () => app.entries.filter((entry) => startOfDay(entry.at) === startOfDay(now)),
     [app.entries, now],
   );
-  const smokes = today.reduce((sum, entry) => sum + (entry.kind === "smoke" ? entry.count : 0), 0);
-  const drinks = today.reduce(
-    (sum, entry) => sum + (entry.kind === "drink" && !isBaijiuMl(entry) ? normalizeCount(entry.count) : 0),
-    0,
-  );
   const baijiuMl = today.reduce(
     (sum, entry) => sum + (entry.kind === "drink" && isBaijiuMl(entry) ? normalizeMl(entry.count) : 0),
     0,
   );
-  const smokeShown = smokes + Math.max(0, normalizeCount(smokeQty) - 1);
-  const drinkShown = drinks + Math.max(0, normalizeCount(drinkQty) - 1);
+  const smokeShown = clampQty(smokeQty, 0, MAX_COUNT);
+  const drinkShown = clampQty(drinkQty, 0, MAX_COUNT);
   const recentLocations = useMemo(() => {
     const seen = new Set<string>();
     const list: string[] = [];
@@ -86,16 +81,18 @@ export function HomeView() {
     setLinkFresh(true);
     setNow(Date.now());
     setGag({ nonce: Date.now(), type: "smoke" });
-    setSmokeQty("1");
+    setSmokeQty("0");
     if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") navigator.vibrate(12);
   }
 
   function record() {
     if (kind === "drink") {
+      if (drinkShown < 1) return;
       setDrinkOpen(true);
       return;
     }
-    logSmoke(normalizeCount(smokeQty));
+    if (smokeShown < 1) return;
+    logSmoke(smokeShown);
   }
 
   const period = currentPeriod(new Date(now));
@@ -146,6 +143,7 @@ export function HomeView() {
             <div className={cn("mt-2 flex justify-center", kind !== "smoke" && "opacity-40")}>
               <QuantityStepper
                 value={smokeQty}
+                min={0}
                 testId="smoke-qty"
                 onChange={(value) => {
                   setKind("smoke");
@@ -175,6 +173,7 @@ export function HomeView() {
             <div className={cn("mt-2 flex justify-center", kind !== "drink" && "opacity-40")}>
               <QuantityStepper
                 value={drinkQty}
+                min={0}
                 testId="drink-qty"
                 onChange={(value) => {
                   setKind("drink");
@@ -262,7 +261,7 @@ export function HomeView() {
       <DrinkDialog
         open={drinkOpen}
         draftMood={draftMood}
-        initialCount={normalizeCount(drinkQty)}
+        initialCount={Math.max(1, drinkShown)}
         recentLocations={recentLocations}
         onOpenChange={setDrinkOpen}
         onSave={(input) => {
@@ -271,7 +270,7 @@ export function HomeView() {
           setFreshCount(entry.unit === "ml" ? 1 : entry.count);
           setLinkFresh(true);
           setDraftMood(entry.mood);
-          setDrinkQty("1");
+          setDrinkQty("0");
           setNow(Date.now());
           setGag({
             nonce: Date.now(),
