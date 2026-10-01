@@ -57,6 +57,8 @@ export function HomeView() {
     (sum, entry) => sum + (entry.kind === "drink" && isBaijiuMl(entry) ? normalizeMl(entry.count) : 0),
     0,
   );
+  const smokeShown = smokes + Math.max(0, normalizeCount(smokeQty) - 1);
+  const drinkShown = drinks + Math.max(0, normalizeCount(drinkQty) - 1);
   const recentLocations = useMemo(() => {
     const seen = new Set<string>();
     const list: string[] = [];
@@ -134,8 +136,8 @@ export function HomeView() {
               className="w-full rounded-3xl px-3 py-4 text-left shadow-sm"
             >
               <p className="font-display text-4xl leading-none" aria-live="polite">
-                <span key={smokes} data-testid="today-smoke-count" className="count-pop inline-block">
-                  {smokes}
+                <span key={smokeShown} data-testid="today-smoke-count" className="count-pop inline-block">
+                  {smokeShown}
                 </span>
                 <span className="ml-1 text-lg">支烟</span>
               </p>
@@ -162,8 +164,8 @@ export function HomeView() {
               className="w-full rounded-3xl px-3 py-4 text-left shadow-sm"
             >
               <p className="font-display text-4xl leading-none" aria-live="polite">
-                <span key={drinks} data-testid="today-drink-count" className="count-pop inline-block">
-                  {drinks}
+                <span key={drinkShown} data-testid="today-drink-count" className="count-pop inline-block">
+                  {drinkShown}
                 </span>
                 <span className="ml-1 text-lg">杯酒</span>
               </p>

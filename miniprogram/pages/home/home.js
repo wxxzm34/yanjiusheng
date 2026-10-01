@@ -13,6 +13,10 @@ function mixHex(hex, toward, amount) {
   return `#${mixed.map((channel) => channel.toString(16).padStart(2, "0")).join("")}`;
 }
 
+function withStepper(saved, qty) {
+  return saved + Math.max(0, normalizeCount(qty) - 1);
+}
+
 function greeting() {
   const hour = new Date().getHours();
   if (hour < 5) return "夜深了，醒着就轻轻记一笔";
@@ -38,6 +42,8 @@ Page({
     cardOn: "#b3aea8",
     gag: false,
     gagText: "",
+    smokeSaved: 0,
+    drinkSaved: 0,
     smokeCount: 0,
     drinkCount: 0,
     baijiuMl: 0,
@@ -49,7 +55,8 @@ Page({
   onUnload() {
     if (this.timer) clearTimeout(this.timer);
   },
-  refresh() {
+  refresh(patch) {
+    patch = patch || {};
     const data = load();
     paintChrome(data);
     const today = filterToday(data.entries).map((entry) => {
@@ -71,6 +78,8 @@ Page({
     const skin = getSkin(data.activeSkinId);
     const pending = this._drinkSaved;
     this._drinkSaved = null;
+    const smokeQty = patch.smokeQty != null ? patch.smokeQty : this.data.smokeQty;
+    const drinkQty = pending ? "1" : this.data.drinkQty;
     const extra = pending
       ? {
           drinkQty: "1",
@@ -86,8 +95,11 @@ Page({
       cardIdle: mixHex(skin.paper, "white", 0.16),
       cardOn: mixHex(skin.paper, "black", 0.3),
       today,
-      smokeCount: summary.smokes,
-      drinkCount: summary.drinks,
+      smokeSaved: summary.smokes,
+      drinkSaved: summary.drinks,
+      smokeQty,
+      smokeCount: withStepper(summary.smokes, smokeQty),
+      drinkCount: withStepper(summary.drinks, drinkQty),
       baijiuMl: summary.baijiuMl,
       ...extra,
     });
@@ -114,10 +126,20 @@ Page({
     this.setData({ selected: "drink" });
   },
   onSmokeQty(event) {
-    this.setData({ smokeQty: event.detail.value, selected: "smoke" });
+    const smokeQty = event.detail.value;
+    this.setData({
+      smokeQty,
+      selected: "smoke",
+      smokeCount: withStepper(this.data.smokeSaved, smokeQty),
+    });
   },
   onDrinkQty(event) {
-    this.setData({ drinkQty: event.detail.value, selected: "drink" });
+    const drinkQty = event.detail.value;
+    this.setData({
+      drinkQty,
+      selected: "drink",
+      drinkCount: withStepper(this.data.drinkSaved, drinkQty),
+    });
   },
   record() {
     if (this.data.selected === "drink") {
@@ -139,12 +161,11 @@ Page({
     data.entries.unshift(entry);
     save(data);
     if (this.timer) clearTimeout(this.timer);
-    this.refresh();
+    this.refresh({ smokeQty: "1" });
     this.setData({
       freshId: entry.id,
       freshCount: safe,
       linkFresh: true,
-      smokeQty: "1",
       gag: true,
       gagText: LASER_LINE,
       draftMood: this.data.draftMood,
