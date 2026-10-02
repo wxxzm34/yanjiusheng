@@ -13,7 +13,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { drinkTitle, groupByDay } from "@/lib/stats";
+import { isBaijiuMl, normalizeCount, normalizeMl } from "@/lib/quantity";
+import { drinkAmountText, drinkTitle, groupByDay } from "@/lib/stats";
 import { formatDayLabel, formatTime } from "@/lib/time";
 import type { Entry } from "@/lib/types";
 
@@ -28,7 +29,7 @@ export function HistoryView() {
       <header className="paper-card mb-4 rounded-3xl px-4 py-3">
         <div>
           <h1 className="font-display text-4xl">记录</h1>
-          <p className="mt-1 text-sm opacity-80">今天和更早的都在这儿，支数是一条条数出来的。</p>
+          <p className="mt-1 text-sm opacity-80">今天和更早的都在这儿，支数按记下的数量加总。</p>
         </div>
       </header>
 
@@ -43,12 +44,23 @@ export function HistoryView() {
       ) : (
         <div className="space-y-4">
           {groups.map((group) => {
-            const smokes = group.entries.filter((entry) => entry.kind === "smoke").length;
-            const drinks = group.entries.length - smokes;
+            const smokes = group.entries.reduce(
+              (sum, entry) => sum + (entry.kind === "smoke" ? normalizeCount(entry.count) : 0),
+              0,
+            );
+            const drinks = group.entries.reduce(
+              (sum, entry) => sum + (entry.kind === "drink" && !isBaijiuMl(entry) ? normalizeCount(entry.count) : 0),
+              0,
+            );
+            const baijiuMl = group.entries.reduce(
+              (sum, entry) => sum + (entry.kind === "drink" && isBaijiuMl(entry) ? normalizeMl(entry.count) : 0),
+              0,
+            );
             return (
               <section key={group.day} className="paper-card rounded-3xl p-4">
                 <h2 className="font-medium">
                   {formatDayLabel(group.day)} · {smokes} 支烟 · {drinks} 杯酒
+                  {baijiuMl > 0 ? ` · 用量 ${baijiuMl} 毫升` : ""}
                 </h2>
                 <ul className="mt-3 space-y-2">
                   {group.entries.map((entry) => (
@@ -60,9 +72,18 @@ export function HistoryView() {
                       <button type="button" className="min-w-0 flex-1 text-left" onClick={() => setEditing(entry)}>
                         <p className="text-sm font-medium">
                           {formatTime(entry.at)} · {entry.kind === "smoke" ? "烟" : drinkTitle(entry)}
+                          {entry.kind === "drink" && drinkAmountText(entry)
+                            ? ` · ${drinkAmountText(entry)}`
+                            : entry.count > 1
+                              ? ` ×${entry.count}`
+                              : ""}
                         </p>
                         <p className="truncate text-xs opacity-70">
-                          {entry.kind === "drink" ? entry.location || "地点空着" : "一支烟"}
+                          {entry.kind === "drink"
+                            ? entry.location || "地点空着"
+                            : entry.count > 1
+                              ? `${entry.count} 支烟`
+                              : "一支烟"}
                         </p>
                       </button>
                       <Badge variant={entry.mood ? "secondary" : "outline"}>{entry.mood ?? "未选"}</Badge>
@@ -119,7 +140,15 @@ function DeleteConfirm({
         <DialogHeader>
           <DialogTitle>删掉这条？</DialogTitle>
           <DialogDescription>
-            {formatTime(entry.at)} 的{entry.kind === "smoke" ? "烟" : drinkTitle(entry)}不会再算进支数。
+            {formatTime(entry.at)} 的
+            {entry.kind === "drink" && drinkAmountText(entry)
+              ? `${drinkTitle(entry)} ${drinkAmountText(entry)}`
+              : entry.count > 1
+                ? `${entry.count} ${entry.kind === "smoke" ? "支烟" : `杯${drinkTitle(entry)}`}`
+                : entry.kind === "smoke"
+                  ? "烟"
+                  : drinkTitle(entry)}
+            不会再算进支数。
           </DialogDescription>
         </DialogHeader>
         <div className="flex gap-2">

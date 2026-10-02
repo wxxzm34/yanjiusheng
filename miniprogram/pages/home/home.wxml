@@ -1,6 +1,6 @@
-<view class="wrap" style="background: {{bg.from}};">
+<view class="wrap theme {{skin.id === 'outfit-wild' ? 'rock' : ''}}" style="background: linear-gradient({{bg.from}}, {{bg.to}}); color: {{skin.ink}};">
   <view class="h1">烟酒生</view>
-  <view class="muted">{{greeting}} · {{skin.name}} · {{bg.name}}</view>
+  <view class="muted">{{greeting}} · 装扮 · {{skin.name}}</view>
 
   <view class="stage" wx:if="{{gag}}">
     <view class="bubble">{{gagText}}</view>
@@ -10,19 +10,44 @@
     <view class="skip" bindtap="skipGag">跳过</view>
   </view>
 
+  <view class="pick-row">
+    <view class="pick-col">
+      <view
+        class="choice"
+        style="background: {{selected === 'smoke' ? cardOn : cardIdle}}; color: {{skin.ink}};"
+        bindtap="selectSmoke"
+      >
+        <view class="choice-count">{{smokeCount}} 支烟</view>
+        <view class="choice-name">记一支</view>
+      </view>
+      <view class="step-wrap {{selected === 'smoke' ? '' : 'dim'}}" bindtap="selectSmoke">
+        <qty-stepper value="{{smokeQty}}" min="0" bind:change="onSmokeQty" />
+      </view>
+    </view>
+    <view class="pick-col">
+      <view
+        class="choice"
+        style="background: {{selected === 'drink' ? cardOn : cardIdle}}; color: {{skin.ink}};"
+        bindtap="selectDrink"
+      >
+        <view class="choice-count">{{drinkCount}} 杯酒</view>
+        <view wx:if="{{baijiuMl}}" class="choice-sub">用量 {{baijiuMl}} 毫升</view>
+        <view class="choice-name">记一杯</view>
+      </view>
+      <view class="step-wrap {{selected === 'drink' ? '' : 'dim'}}" bindtap="selectDrink">
+        <qty-stepper value="{{drinkQty}}" min="0" bind:change="onDrinkQty" />
+      </view>
+    </view>
+  </view>
+  <button class="btn record-wide" style="background: {{skin.accent}}; color: {{skin.onAccent || skin.paper}};" bindtap="record">记录</button>
   <view class="card">
-    <view class="muted">今天</view>
-    <view class="count">{{smokeCount}} 支烟</view>
-    <view class="muted">{{drinkCount ? '还有 ' + drinkCount + ' 杯酒' : '酒还没记'}}</view>
-    <mood-picker label="{{linkFresh ? '正在改刚才那支的心情' : '先选心情也行，不选直接记'}}" value="{{draftMood}}" bind:change="onMood" />
-    <view wx:if="{{linkFresh}}" class="link" bindtap="freezeMood">刚才那支就这样</view>
-    <button class="btn" style="background: {{skin.accent}}; color: #fff;" bindtap="logSmoke">记一支</button>
-    <button class="btn btn-line" bindtap="goDrink">记一杯</button>
+    <mood-picker label="{{linkFresh ? '点一下改刚才记下的心情，下一笔也会带上' : '点一下，下一笔记下时带上'}}" value="{{draftMood}}" bind:change="onMood" />
+    <view wx:if="{{linkFresh}}" class="link" bindtap="freezeMood">{{freshCount > 1 ? '刚才这几笔就这样' : '刚才那笔就这样'}}</view>
   </view>
 
   <view class="card" wx:if="{{today.length === 0}}">
     <view class="h1" style="font-size: 40rpx;">今天还是空白的</view>
-    <view class="muted">点上面记一支，或者先记一杯。</view>
+    <view class="muted">先选烟或酒，再点记录。</view>
     <button class="btn btn-line" bindtap="loadSample">试试示例</button>
   </view>
 

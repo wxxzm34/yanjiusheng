@@ -41,7 +41,7 @@ export function CartoonStage({
       className="relative h-[300px]"
       data-testid="cartoon-stage"
       data-skin={skin.id}
-      data-pose={skin.pose}
+      data-motif={skin.motif}
     >
       {smoke && (
         <button

@@ -1,0 +1,12 @@
+<view class="stepper">
+  <view class="step" bindtap="dec" aria-role="button">－</view>
+  <input
+    class="num"
+    type="number"
+    maxlength="3"
+    value="{{text}}"
+    bindinput="onInput"
+    bindblur="onBlur"
+  />
+  <view class="step" bindtap="inc" aria-role="button">＋</view>
+</view>

@@ -1,10 +1,12 @@
+const { MOODS, MOOD_EMOJI } = require("../../utils/quantity");
+
 Component({
   properties: {
-    label: { type: String, value: "心情" },
+    label: { type: String, value: "" },
     value: { type: String, value: "" },
   },
   data: {
-    moods: ["无聊", "开心", "难过"],
+    moods: MOODS.map((name) => ({ name, emoji: MOOD_EMOJI[name] })),
   },
   methods: {
     pick(event) {

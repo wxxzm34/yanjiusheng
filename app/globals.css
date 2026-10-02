@@ -221,29 +221,6 @@
   }
 }
 
-@keyframes rain-fall {
-  0% {
-    transform: translateY(-20px);
-    opacity: 0;
-  }
-  30% {
-    opacity: 0.8;
-  }
-  100% {
-    transform: translateY(80px);
-    opacity: 0;
-  }
-}
-
-@keyframes petal-fall {
-  0% {
-    transform: translateY(0) rotate(0);
-  }
-  100% {
-    transform: translateY(40px) rotate(20deg);
-  }
-}
-
 @keyframes foam-bounce {
   0%,
   100% {
@@ -306,14 +283,6 @@
   animation: count-pop 0.35s ease-out;
 }
 
-.rain-drop {
-  animation: rain-fall 1.4s linear infinite;
-}
-
-.petal {
-  animation: petal-fall 3.4s ease-in-out infinite;
-}
-
 .foam {
   animation: foam-bounce 0.8s ease-in-out infinite;
   transform-origin: center;
@@ -335,8 +304,6 @@
   .gag-laser,
   .gag-bubble,
   .count-pop,
-  .rain-drop,
-  .petal,
   .foam,
   .steam,
   .swirl {

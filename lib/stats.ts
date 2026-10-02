@@ -1,3 +1,4 @@
+import { canonicalMood, isBaijiuMl, normalizeCount, normalizeMl } from "@/lib/quantity";
 import type { DrinkType, Entry, Mood } from "@/lib/types";
 import { DRINK_TYPES, MOODS } from "@/lib/types";
 import { daysInMonth, startOfDay } from "@/lib/time";
@@ -5,23 +6,32 @@ import { daysInMonth, startOfDay } from "@/lib/time";
 export type DrinkCount = {
   type: DrinkType;
   count: number;
+  ml: number;
   labels: { label: string; count: number }[];
 };
 
 export type Summary = {
   smokes: number;
   drinks: number;
+  baijiuMl: number;
   byDrink: DrinkCount[];
   moods: Record<Mood, number>;
   unset: number;
 };
 
+function emptyMoods(): Record<Mood, number> {
+  const moods = {} as Record<Mood, number>;
+  for (const mood of MOODS) moods[mood] = 0;
+  return moods;
+}
+
 export function emptySummary(): Summary {
   return {
     smokes: 0,
     drinks: 0,
-    byDrink: DRINK_TYPES.map((type) => ({ type, count: 0, labels: [] })),
-    moods: { 无聊: 0, 开心: 0, 难过: 0 },
+    byDrink: DRINK_TYPES.map((type) => ({ type, count: 0, ml: 0, labels: [] })),
+    baijiuMl: 0,
+    moods: emptyMoods(),
     unset: 0,
   };
 }
@@ -30,19 +40,30 @@ export function summarize(entries: Entry[]): Summary {
   const summary = emptySummary();
   const other = new Map<string, number>();
   for (const entry of entries) {
-    if (entry.mood) summary.moods[entry.mood] += 1;
-    else summary.unset += 1;
-    if (entry.kind === "smoke") {
-      summary.smokes += 1;
+    const mood = canonicalMood(entry.mood);
+    if (entry.kind === "drink" && isBaijiuMl(entry)) {
+      const ml = normalizeMl(entry.count);
+      summary.baijiuMl += ml;
+      const bucket = summary.byDrink.find((item) => item.type === "白酒");
+      if (bucket) bucket.ml += ml;
+      if (mood) summary.moods[mood] += 1;
+      else summary.unset += 1;
       continue;
     }
-    summary.drinks += 1;
+    const count = normalizeCount(entry.count);
+    if (mood) summary.moods[mood] += count;
+    else summary.unset += count;
+    if (entry.kind === "smoke") {
+      summary.smokes += count;
+      continue;
+    }
+    summary.drinks += count;
     const bucket = summary.byDrink.find((item) => item.type === entry.drinkType);
     if (!bucket) continue;
-    bucket.count += 1;
+    bucket.count += count;
     if (entry.drinkType === "其他") {
       const label = entry.drinkLabel.trim() || "其他";
-      other.set(label, (other.get(label) ?? 0) + 1);
+      other.set(label, (other.get(label) ?? 0) + count);
     }
   }
   const otherBucket = summary.byDrink.find((item) => item.type === "其他");
@@ -102,8 +123,10 @@ export function daySeries(entries: Entry[], year: number, month: number): DayPoi
     if (date.getFullYear() !== year || date.getMonth() + 1 !== month) continue;
     const point = points[date.getDate() - 1];
     if (!point) continue;
-    if (entry.kind === "smoke") point.smokes += 1;
-    else point.drinks += 1;
+    if (entry.kind === "drink" && isBaijiuMl(entry)) continue;
+    const count = normalizeCount(entry.count);
+    if (entry.kind === "smoke") point.smokes += count;
+    else point.drinks += count;
   }
   return points;
 }
@@ -120,8 +143,10 @@ export function monthSeries(entries: Entry[], year: number): MonthPoint[] {
     const date = new Date(entry.at);
     if (date.getFullYear() !== year) continue;
     const point = points[date.getMonth()];
-    if (entry.kind === "smoke") point.smokes += 1;
-    else point.drinks += 1;
+    if (entry.kind === "drink" && isBaijiuMl(entry)) continue;
+    const count = normalizeCount(entry.count);
+    if (entry.kind === "smoke") point.smokes += count;
+    else point.drinks += count;
   }
   return points;
 }
@@ -135,17 +160,31 @@ export function moodParts(summary: Summary) {
 }
 
 export function drinkParts(summary: Summary) {
-  return summary.byDrink.filter((item) => item.count > 0);
+  return summary.byDrink.filter((item) => item.count > 0 || item.ml > 0);
+}
+
+export function formatDrinkPart(item: DrinkCount) {
+  if (item.type === "其他" && item.labels.length > 0) {
+    return item.labels.map((label) => `${label.label} ${label.count}`).join(" · ");
+  }
+  if (item.type === "白酒") {
+    const bits: string[] = [];
+    if (item.count > 0) bits.push(`白酒 ${item.count} 杯`);
+    if (item.ml > 0) bits.push(`用量 ${item.ml} 毫升`);
+    return bits.join(" · ");
+  }
+  return `${item.type} ${item.count}`;
+}
+
+export function drinkAmountText(entry: Extract<Entry, { kind: "drink" }>) {
+  if (isBaijiuMl(entry)) return `用量 ${normalizeMl(entry.count)} 毫升`;
+  if (entry.drinkType === "白酒") return `${normalizeCount(entry.count)} 杯`;
+  return "";
 }
 
 export function shareText(title: string, summary: Summary) {
   const drinks = drinkParts(summary)
-    .map((item) => {
-      if (item.type === "其他" && item.labels.length > 0) {
-        return item.labels.map((label) => `${label.label} ${label.count}`).join(" · ");
-      }
-      return `${item.type} ${item.count}`;
-    })
+    .map((item) => formatDrinkPart(item))
     .join(" · ");
   const moods = moodParts(summary);
   const lines = [
@@ -153,6 +192,7 @@ export function shareText(title: string, summary: Summary) {
     `烟 ${summary.smokes} 支`,
     `酒 ${summary.drinks} 杯`,
   ];
+  if (summary.baijiuMl > 0) lines.push(`白酒用量 ${summary.baijiuMl} 毫升`);
   if (drinks) lines.push(drinks);
   lines.push(moods.length > 0 ? `心情 ${moods.join(" · ")}` : "心情还没选");
   lines.push("轻轻记下，不打分。");

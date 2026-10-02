@@ -1,12 +1,11 @@
 const { load, save, buildSample } = require("../../utils/storage");
-const { SKINS, BACKGROUNDS, getSkin, getBackground, paintChrome } = require("../../utils/packs");
+const { OUTFITS, getSkin, getBackground, paintChrome, DEFAULT_OUTFIT_ID } = require("../../utils/packs");
 
 Page({
   data: {
-    skin: getSkin("skin-star"),
-    bg: getBackground("bg-lamp"),
-    skins: [],
-    backgrounds: [],
+    skin: getSkin(DEFAULT_OUTFIT_ID),
+    bg: getBackground(DEFAULT_OUTFIT_ID),
+    outfits: [],
     pendingId: "",
   },
   onShow() {
@@ -16,29 +15,23 @@ Page({
     const data = load();
     paintChrome(data);
     const pendingId = this.data.pendingId;
+    const skin = getSkin(data.activeSkinId);
     this.setData({
-      skin: getSkin(data.activeSkinId),
+      skin,
       bg: getBackground(data.activeBgId),
-      skins: SKINS.map((item) => ({
+      outfits: OUTFITS.map((item) => ({
         ...item,
         unlocked: data.unlockedIds.indexOf(item.id) >= 0,
-        active: data.activeSkinId === item.id,
-        pending: pendingId === item.id,
-      })),
-      backgrounds: BACKGROUNDS.map((item) => ({
-        ...item,
-        unlocked: data.unlockedIds.indexOf(item.id) >= 0,
-        active: data.activeBgId === item.id,
+        active: skin.id === item.id,
         pending: pendingId === item.id,
       })),
     });
   },
   act(event) {
     const id = event.currentTarget.dataset.id;
-    const kind = event.currentTarget.dataset.kind;
     const data = load();
     const unlocked = data.unlockedIds.indexOf(id) >= 0;
-    const active = kind === "skin" ? data.activeSkinId === id : data.activeBgId === id;
+    const active = data.activeSkinId === id && data.activeBgId === id;
     if (active) return;
     if (!unlocked) {
       this.setData({ pendingId: id });
@@ -53,8 +46,8 @@ Page({
       }, 700);
       return;
     }
-    if (kind === "skin") data.activeSkinId = id;
-    else data.activeBgId = id;
+    data.activeSkinId = id;
+    data.activeBgId = id;
     save(data);
     this.paint();
   },

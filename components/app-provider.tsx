@@ -1,8 +1,9 @@
 "use client";
 
 import { createContext, useContext, useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
-import { DEFAULT_BG_ID, DEFAULT_SKIN_ID, getBackground, getSkin, type BackgroundPack, type Skin } from "@/lib/packs";
+import { DEFAULT_BG_ID, DEFAULT_SKIN_ID, getBackground, getOutfit, getSkin, type BackgroundPack, type Skin } from "@/lib/packs";
 import { buildSample } from "@/lib/sample";
+import { normalizeCount, normalizeMl } from "@/lib/quantity";
 import { STORAGE_KEY, createId, defaultData, loadData, persistData, sanitizeData } from "@/lib/storage";
 import type { AppData, DrinkEntry, DrinkType, Entry, Mood, ShareTarget, SmokeEntry } from "@/lib/types";
 
@@ -19,14 +20,15 @@ type AppContextValue = {
   unlockedIds: string[];
   pendingPackId: string | null;
   downloadPack: (id: string) => void;
-  applySkin: (id: string) => void;
-  applyBackground: (id: string) => void;
-  addSmoke: (mood: Mood | null) => SmokeEntry;
+  applyOutfit: (id: string) => void;
+  addSmoke: (mood: Mood | null, count?: number) => SmokeEntry;
   addDrink: (input: {
     mood: Mood | null;
     drinkType: DrinkType;
     drinkLabel: string;
     location: string;
+    count?: number;
+    unit?: "ml" | "cup";
   }) => DrinkEntry;
   saveEntry: (entry: Entry) => void;
   deleteEntry: (id: string) => void;
@@ -140,26 +142,28 @@ export function AppProvider({ children }: { children: ReactNode }) {
           );
         }, 700);
       },
-      applySkin: (id: string) => {
+      applyOutfit: (id: string) => {
         commit((prev) => {
-          if (!prev.unlockedIds.includes(id) || prev.activeSkinId === id) return prev;
-          return { ...prev, activeSkinId: id };
+          if (!getOutfit(id) || !prev.unlockedIds.includes(id)) return prev;
+          if (prev.activeSkinId === id && prev.activeBgId === id) return prev;
+          return { ...prev, activeSkinId: id, activeBgId: id };
         });
       },
-      applyBackground: (id: string) => {
-        commit((prev) => {
-          if (!prev.unlockedIds.includes(id) || prev.activeBgId === id) return prev;
-          return { ...prev, activeBgId: id };
-        });
-      },
-      addSmoke: (mood: Mood | null) => {
-        const entry: SmokeEntry = { id: createId(), kind: "smoke", at: Date.now(), mood };
+      addSmoke: (mood: Mood | null, count = 1) => {
+        const entry: SmokeEntry = {
+          id: createId(),
+          kind: "smoke",
+          at: Date.now(),
+          mood,
+          count: normalizeCount(count),
+        };
         commit((prev) => ({ ...prev, entries: [entry, ...prev.entries] }));
         return entry;
       },
       addDrink: (input) => {
         const label =
           input.drinkType === "其他" ? input.drinkLabel.trim().slice(0, 12) || "其他" : input.drinkType;
+        const volume = input.drinkType === "白酒";
         const entry: DrinkEntry = {
           id: createId(),
           kind: "drink",
@@ -168,6 +172,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
           drinkType: input.drinkType,
           drinkLabel: label,
           location: input.location.trim().slice(0, 24),
+          count: volume ? normalizeMl(input.count) : normalizeCount(input.count),
+          ...(volume ? { unit: "ml" as const } : {}),
         };
         commit((prev) => ({ ...prev, entries: [entry, ...prev.entries] }));
         return entry;

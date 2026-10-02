@@ -1,21 +1,13 @@
 <view class="wrap">
   <view class="h1">装扮</view>
-  <view class="muted">下载只存在这台手机里。正在用 {{skin.name}} · {{bg.name}}</view>
-  <view class="card" wx:for="{{backgrounds}}" wx:key="id" style="background: {{item.from}};">
-    <view>{{item.name}}</view>
+  <view class="muted">下载只存在这台手机里。正在用 {{skin.name}}</view>
+  <view class="card" wx:for="{{outfits}}" wx:key="id">
+    <view class="preview" style="background: linear-gradient({{item.from}}, {{item.to}}); color: {{item.ink}};">
+      <view class="swatch" style="background: {{item.accent}};"></view>
+      <view>{{item.name}}</view>
+    </view>
     <view class="muted">{{item.blurb}}</view>
-    <button
-      class="btn btn-line"
-      data-id="{{item.id}}"
-      data-kind="bg"
-      bindtap="act"
-    >{{item.active ? '使用中' : item.unlocked ? '使用' : item.pending ? '下载中…' : '下载'}}</button>
-  </view>
-  <view class="card" wx:for="{{skins}}" wx:key="id">
-    <view class="swatch" style="background: {{item.heroBody}};"></view>
-    <view>{{item.name}}</view>
-    <view class="muted">{{item.blurb}}</view>
-    <button class="btn btn-line" data-id="{{item.id}}" data-kind="skin" bindtap="act">
+    <button class="btn btn-line" data-id="{{item.id}}" bindtap="act">
       {{item.active ? '使用中' : item.unlocked ? '使用' : item.pending ? '下载中…' : '下载'}}
     </button>
   </view>

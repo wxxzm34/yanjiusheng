@@ -1,5 +1,6 @@
 import type { BackgroundPack, Skin } from "@/lib/packs";
-import { drinkParts, moodParts, type Summary } from "@/lib/stats";
+import { drinkParts, formatDrinkPart, moodParts, type Summary } from "@/lib/stats";
+import { MOODS, MOOD_COLORS, UNSET_MOOD_COLOR } from "@/lib/types";
 
 export type CardModel = {
   title: string;
@@ -89,18 +90,43 @@ export function drawShareCard(
   ctx.fillText("杯酒", drinkX + drinkWidth + 16, 400);
 
   ctx.font = `400 26px ${bodyFont}`;
-  const drinkLine = drinkParts(summary)
-    .map((item) => `${item.type} ${item.count}`)
-    .join("  ·  ");
+  const drinkBits = drinkParts(summary).map((item) => formatDrinkPart(item));
+  if (summary.baijiuMl > 0 && !drinkBits.some((bit) => bit.includes("毫升"))) {
+    drinkBits.push(`用量 ${summary.baijiuMl} 毫升`);
+  }
+  const drinkLine = drinkBits.join("  ·  ");
   const moodLine = moodParts(summary).join("  ·  ");
   ctx.fillStyle = skin.ink;
   wrapText(ctx, drinkLine || "没有酒", 84, 500, width - 180, 36);
-  wrapText(ctx, moodLine || "心情还没选", 84, 580, width - 180, 36);
+  wrapText(ctx, moodLine || "心情还没选", 84, 548, width - 180, 36);
+  paintMoodBar(ctx, summary, 84, 600, width - 180);
   ctx.fillStyle = skin.accent;
   ctx.fillText("轻轻记下，不打分。", 84, 700);
 
   paintHero(ctx, skin, 96, 840);
   paintUser(ctx, 520, 860);
+}
+
+function paintMoodBar(
+  ctx: CanvasRenderingContext2D,
+  summary: Summary,
+  x: number,
+  y: number,
+  width: number,
+) {
+  const items = [
+    ...MOODS.map((mood) => ({ color: MOOD_COLORS[mood], count: summary.moods[mood] })),
+    { color: UNSET_MOOD_COLOR, count: summary.unset },
+  ].filter((item) => item.count > 0);
+  const total = items.reduce((sum, item) => sum + item.count, 0);
+  if (!total) return;
+  let offset = 0;
+  items.forEach((item, index) => {
+    const slice = index === items.length - 1 ? width - offset : Math.max(10, Math.round((item.count / total) * width));
+    ctx.fillStyle = item.color;
+    ctx.fillRect(x + offset, y, slice, 16);
+    offset += slice;
+  });
 }
 
 function roundRect(

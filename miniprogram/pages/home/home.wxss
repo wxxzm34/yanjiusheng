@@ -1,10 +1,114 @@
-.count {
-  font-size: 72rpx;
+.pick-row {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 24rpx;
+}
+
+.pick-col {
+  flex: 1;
+  min-width: 0;
+}
+
+.choice {
+  border-radius: 28rpx;
+  padding: 28rpx 16rpx 22rpx;
+  text-align: center;
+}
+
+.choice-count {
+  font-size: 40rpx;
   font-weight: 700;
-  margin: 8rpx 0;
+  line-height: 1.2;
+}
+
+.choice-sub {
+  margin-top: 8rpx;
+  font-size: 24rpx;
+}
+
+.choice-name {
+  margin-top: 10rpx;
+  font-size: 28rpx;
+}
+
+.step-wrap {
+  margin-top: 12rpx;
+  display: flex;
+  justify-content: center;
+}
+
+.dim {
+  opacity: 0.4;
+}
+
+.record-wide {
+  width: 100%;
+  margin-top: 20rpx;
+}
+
+.record-wide::after {
+  border: none;
 }
 
 .link {
   margin-top: 12rpx;
   text-decoration: underline;
+}
+
+.log-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-top: 16rpx;
+}
+
+.log-row .btn {
+  margin-top: 0;
+  width: auto;
+  line-height: 80rpx;
+  padding: 0 24rpx;
+  font-size: 30rpx;
+}
+
+.log-row .btn::after {
+  border: none;
+}
+
+.log-row .tap {
+  flex: 1;
+}
+
+.log-row .record {
+  flex: none;
+}
+
+.theme .card,
+.theme .btn-line,
+.theme .link {
+  color: #2b2118;
+}
+
+.theme > .muted {
+  color: inherit;
+  opacity: 0.75;
+}
+
+.theme .card .muted {
+  color: #7a6558;
+  opacity: 1;
+}
+
+.rock .card {
+  background: #141011;
+  color: #f3e8e6;
+}
+
+.rock .card .muted {
+  color: #c9b4b0;
+}
+
+.rock .btn-line,
+.rock .link {
+  background: #1c1416;
+  color: #f3e8e6;
 }

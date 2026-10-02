@@ -1,4 +1,5 @@
-const { load, save, uid, DRINKS } = require("../../utils/storage");
+const { load, save, uid, DRINKS, normalizeCount, canonicalMood } = require("../../utils/storage");
+const { DEFAULT_BAIJIU_ML, normalizeMl } = require("../../utils/quantity");
 const { paintChrome } = require("../../utils/packs");
 
 const LINES = {
@@ -16,12 +17,25 @@ Page({
     drinkLabel: "",
     location: "",
     mood: "",
+    qty: "1",
+  },
+  onLoad(query) {
+    const mood = canonicalMood(query && query.mood);
+    const cups = normalizeCount(query && query.qty);
+    this._cupQty = cups;
+    const next = { qty: String(cups) };
+    if (mood) next.mood = mood;
+    this.setData(next);
   },
   onShow() {
     paintChrome(load());
   },
   pickType(event) {
-    this.setData({ drinkType: event.currentTarget.dataset.type });
+    const drinkType = event.currentTarget.dataset.type;
+    const patch = { drinkType };
+    if (drinkType === "白酒" && this.data.drinkType !== "白酒") patch.qty = String(DEFAULT_BAIJIU_ML);
+    if (drinkType !== "白酒" && this.data.drinkType === "白酒") patch.qty = String(this._cupQty || 1);
+    this.setData(patch);
   },
   onLabel(event) {
     this.setData({ drinkLabel: event.detail.value });
@@ -32,20 +46,31 @@ Page({
   onMood(event) {
     this.setData({ mood: event.detail.mood });
   },
+  onQty(event) {
+    this.setData({ qty: event.detail.value });
+  },
   saveDrink() {
     const data = load();
     const drinkType = this.data.drinkType;
+    const volume = drinkType === "白酒";
+    const count = volume ? normalizeMl(this.data.qty) : normalizeCount(this.data.qty);
     const drinkLabel = drinkType === "其他" ? (this.data.drinkLabel || "").trim().slice(0, 12) || "其他" : drinkType;
+    const id = uid();
     data.entries.unshift({
-      id: uid(),
+      id,
       kind: "drink",
       at: Date.now(),
       mood: this.data.mood || null,
       drinkType,
       drinkLabel,
       location: (this.data.location || "").trim().slice(0, 24),
+      count,
+      ...(volume ? { unit: "ml" } : {}),
     });
     save(data);
+    const pages = getCurrentPages();
+    const prev = pages[pages.length - 2];
+    if (prev && prev.markDrinkSaved) prev.markDrinkSaved({ id, count: volume ? 1 : count, mood: this.data.mood || "" });
     const line = drinkType === "其他" ? `这杯叫${drinkLabel}，先记下。` : LINES[drinkType];
     wx.showToast({ title: line, icon: "none", duration: 1800 });
     setTimeout(() => wx.navigateBack(), 400);

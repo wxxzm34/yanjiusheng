@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { MoodPicker } from "@/components/mood-picker";
+import { QuantityStepper } from "@/components/quantity-stepper";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { DEFAULT_BAIJIU_ML, MAX_ML, normalizeCount, normalizeMl } from "@/lib/quantity";
 import type { DrinkType, Mood } from "@/lib/types";
 import { DRINK_TYPES } from "@/lib/types";
 import { cn } from "cn";
@@ -19,15 +21,24 @@ import { cn } from "cn";
 export function DrinkDialog({
   open,
   draftMood,
+  initialCount = 1,
   recentLocations,
   onOpenChange,
   onSave,
 }: {
   open: boolean;
   draftMood: Mood | null;
+  initialCount?: number;
   recentLocations: string[];
   onOpenChange: (open: boolean) => void;
-  onSave: (input: { mood: Mood | null; drinkType: DrinkType; drinkLabel: string; location: string }) => void;
+  onSave: (input: {
+    mood: Mood | null;
+    drinkType: DrinkType;
+    drinkLabel: string;
+    location: string;
+    count: number;
+    unit?: "ml" | "cup";
+  }) => void;
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -35,6 +46,7 @@ export function DrinkDialog({
         {open && (
           <DrinkForm
             draftMood={draftMood}
+            initialCount={initialCount}
             recentLocations={recentLocations}
             onSave={(input) => {
               onSave(input);
@@ -49,14 +61,31 @@ export function DrinkDialog({
 
 function DrinkForm({
   draftMood,
+  initialCount,
   recentLocations,
   onSave,
 }: {
   draftMood: Mood | null;
+  initialCount: number;
   recentLocations: string[];
-  onSave: (input: { mood: Mood | null; drinkType: DrinkType; drinkLabel: string; location: string }) => void;
+  onSave: (input: {
+    mood: Mood | null;
+    drinkType: DrinkType;
+    drinkLabel: string;
+    location: string;
+    count: number;
+    unit?: "ml" | "cup";
+  }) => void;
 }) {
   const [drinkType, setDrinkType] = useState<DrinkType>("啤酒");
+  const [qty, setQty] = useState(() => String(normalizeCount(initialCount)));
+  const volume = drinkType === "白酒";
+
+  function chooseType(type: DrinkType) {
+    if (type === "白酒" && drinkType !== "白酒") setQty(String(DEFAULT_BAIJIU_ML));
+    if (type !== "白酒" && drinkType === "白酒") setQty(String(normalizeCount(initialCount)));
+    setDrinkType(type);
+  }
   const [drinkLabel, setDrinkLabel] = useState("");
   const [location, setLocation] = useState("");
   const [mood, setMood] = useState<Mood | null>(draftMood);
@@ -64,14 +93,23 @@ function DrinkForm({
   return (
     <>
       <DialogHeader>
-        <DialogTitle>记一杯</DialogTitle>
-        <DialogDescription>种类要选，心情和地点随便，不选也能记下。</DialogDescription>
+        <DialogTitle>{volume ? "记白酒" : "记一杯"}</DialogTitle>
+        <DialogDescription>
+          {volume ? "用量按毫升记，心情和地点随便。" : "种类要选，心情和地点随便，不选也能记下。"}
+        </DialogDescription>
       </DialogHeader>
       <form
         className="grid gap-4"
         onSubmit={(event) => {
           event.preventDefault();
-          onSave({ mood, drinkType, drinkLabel, location });
+          onSave({
+            mood,
+            drinkType,
+            drinkLabel,
+            location,
+            count: volume ? normalizeMl(qty) : normalizeCount(qty),
+            unit: volume ? "ml" : "cup",
+          });
         }}
       >
         <div className="grid grid-cols-3 gap-2">
@@ -81,12 +119,12 @@ function DrinkForm({
               type="button"
               data-testid={`drink-type-${type}`}
               aria-pressed={drinkType === type}
-              onClick={() => setDrinkType(type)}
+              onClick={() => chooseType(type)}
               className={cn(
                 "h-11 rounded-2xl text-sm font-medium",
                 drinkType === type
                   ? "bg-[var(--skin-accent)] text-[var(--primary-foreground)]"
-                  : "bg-white text-[var(--skin-ink)] ring-1 ring-black/5",
+                  : "bg-white text-[#2b2118] ring-1 ring-black/5",
               )}
             >
               {type}
@@ -107,7 +145,7 @@ function DrinkForm({
             />
           </div>
         )}
-        <MoodPicker prefix="drink" label="这杯的心情" value={mood} onChange={setMood} />
+        <MoodPicker prefix="drink" label={volume ? "心情" : "这杯的心情"} value={mood} onChange={setMood} />
         <div className="grid gap-2">
           <Label htmlFor="drink-location">在哪儿喝的</Label>
           <Input
@@ -133,6 +171,13 @@ function DrinkForm({
               ))}
             </div>
           )}
+        </div>
+        <div className="flex items-center justify-between gap-3">
+          <Label>
+            {volume ? "用量" : "几杯"}
+            {volume ? <span className="ml-1 text-sm font-normal">毫升</span> : null}
+          </Label>
+          <QuantityStepper value={qty} onChange={setQty} testId="drink-qty" max={volume ? MAX_ML : undefined} />
         </div>
         <Button type="submit" className="h-12! text-base" data-testid="drink-save">
           记下来

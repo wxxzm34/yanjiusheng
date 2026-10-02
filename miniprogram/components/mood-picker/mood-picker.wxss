@@ -11,9 +11,15 @@
 .chip {
   flex: 1;
   text-align: center;
-  padding: 18rpx 0;
+  padding: 16rpx 0 18rpx;
   border-radius: 24rpx;
   background: #fff;
+  color: #2b2118;
+}
+
+.emoji {
+  font-size: 40rpx;
+  line-height: 1.2;
 }
 
 .chip.on {

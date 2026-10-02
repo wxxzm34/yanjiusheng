@@ -1,28 +1,18 @@
-import {
-  BACKGROUNDS,
-  DEFAULT_BG_ID,
-  DEFAULT_SKIN_ID,
-  SKINS,
-  getBackground,
-  getSkin,
-} from "@/lib/packs";
-import type { AppData, DrinkEntry, DrinkType, Entry, Mood, SmokeEntry } from "@/lib/types";
-import { DRINK_TYPES, MOODS } from "@/lib/types";
+import { DEFAULT_BG_ID, DEFAULT_SKIN_ID, OUTFITS, getBackground, getSkin } from "@/lib/packs";
+import { canonicalMood, normalizeCount, normalizeMl } from "@/lib/quantity";
+import type { AppData, DrinkEntry, DrinkType, Entry, SmokeEntry } from "@/lib/types";
+import { DRINK_TYPES } from "@/lib/types";
 
 export const STORAGE_KEY = "yanjiusheng.v1";
 
-const moodSet = new Set<string>(MOODS);
 const drinkSet = new Set<string>(DRINK_TYPES);
-const skinIds = new Set(SKINS.map((skin) => skin.id));
-const backgroundIds = new Set(BACKGROUNDS.map((background) => background.id));
+const outfitIds = new Set(OUTFITS.map((outfit) => outfit.id));
 
 export function defaultData(): AppData {
   return {
     version: 1,
     entries: [],
-    unlockedIds: SKINS.filter((skin) => skin.free)
-      .map((skin) => skin.id)
-      .concat(BACKGROUNDS.filter((background) => background.free).map((background) => background.id)),
+    unlockedIds: OUTFITS.filter((outfit) => outfit.free).map((outfit) => outfit.id),
     activeSkinId: DEFAULT_SKIN_ID,
     activeBgId: DEFAULT_BG_ID,
   };
@@ -35,18 +25,15 @@ export function createId() {
   return `id-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
-function asMood(value: unknown): Mood | null {
-  return typeof value === "string" && moodSet.has(value) ? (value as Mood) : null;
-}
-
 function sanitizeEntry(value: unknown): Entry | null {
   if (!value || typeof value !== "object") return null;
   const item = value as Record<string, unknown>;
   if (typeof item.id !== "string" || !item.id) return null;
   if (typeof item.at !== "number" || !Number.isFinite(item.at)) return null;
-  const mood = asMood(item.mood);
+  const mood = canonicalMood(item.mood);
   if (item.kind === "smoke") {
-    const entry: SmokeEntry = { id: item.id, kind: "smoke", at: item.at, mood };
+    const count = normalizeCount(item.count);
+    const entry: SmokeEntry = { id: item.id, kind: "smoke", at: item.at, mood, count };
     return entry;
   }
   if (item.kind !== "drink") return null;
@@ -57,6 +44,7 @@ function sanitizeEntry(value: unknown): Entry | null {
       ? item.drinkLabel.trim().slice(0, 12)
       : drinkType;
   const location = typeof item.location === "string" ? item.location.trim().slice(0, 24) : "";
+  const volume = drinkType === "白酒" && item.unit === "ml";
   const entry: DrinkEntry = {
     id: item.id,
     kind: "drink",
@@ -65,7 +53,9 @@ function sanitizeEntry(value: unknown): Entry | null {
     drinkType,
     drinkLabel,
     location,
+    count: volume ? normalizeMl(item.count) : normalizeCount(item.count),
   };
+  if (drinkType === "白酒") entry.unit = volume ? "ml" : "cup";
   return entry;
 }
 
@@ -79,7 +69,7 @@ export function sanitizeData(value: unknown): AppData {
   const unlocked = new Set(base.unlockedIds);
   if (Array.isArray(raw.unlockedIds)) {
     for (const id of raw.unlockedIds) {
-      if (typeof id === "string" && (skinIds.has(id) || backgroundIds.has(id))) unlocked.add(id);
+      if (typeof id === "string" && outfitIds.has(id)) unlocked.add(id);
     }
   }
   const unlockedIds = [...unlocked];
@@ -87,7 +77,8 @@ export function sanitizeData(value: unknown): AppData {
   let activeBgId = typeof raw.activeBgId === "string" ? raw.activeBgId : base.activeBgId;
   if (!getSkin(activeSkinId) || !unlocked.has(activeSkinId)) activeSkinId = DEFAULT_SKIN_ID;
   if (!getBackground(activeBgId) || !unlocked.has(activeBgId)) activeBgId = DEFAULT_BG_ID;
-  return { version: 1, entries, unlockedIds, activeSkinId, activeBgId };
+  const outfitId = getSkin(activeSkinId) ? activeSkinId : DEFAULT_SKIN_ID;
+  return { version: 1, entries, unlockedIds, activeSkinId: outfitId, activeBgId: outfitId };
 }
 
 export function loadData(): AppData {

@@ -14,13 +14,7 @@ export function HeroFigure({
   return (
     <svg viewBox="0 0 170 190" className={`h-40 w-36 ${bob} ${className}`} aria-hidden="true">
       <ellipse cx="84" cy="176" rx="36" ry="8" fill="#000" opacity="0.12" />
-      {skin.pose === "leaf" ? (
-        <path d="M70 120 C40 130 24 168 30 176 C48 160 62 150 78 146 Z" fill={skin.cape} />
-      ) : skin.pose === "moon" ? (
-        <path d="M58 118 C20 150 24 182 48 180 C40 150 62 140 84 136 Z" fill={skin.cape} />
-      ) : (
-        <path d="M64 118 C36 132 28 170 40 176 C52 156 66 146 80 142 Z" fill={skin.cape} />
-      )}
+      <path d="M64 118 C36 132 28 170 40 176 C52 156 66 146 80 142 Z" fill={skin.cape} />
       <rect x="58" y="112" width="54" height="46" rx="18" fill={skin.heroBody} />
       <rect x="66" y="154" width="14" height="22" rx="7" fill={skin.heroBody} />
       <rect x="90" y="154" width="14" height="22" rx="7" fill={skin.heroBody} />
@@ -28,45 +22,25 @@ export function HeroFigure({
       <circle cx="97" cy="176" r="8" fill={skin.heroEmblem} />
       <circle cx="86" cy="78" r="34" fill={skin.heroTrim} />
       <path d="M54 74c2-28 62-28 64 0" fill={skin.heroBody} />
-      <Emblem pose={skin.pose} fill={skin.heroEmblem} trim={skin.heroTrim} />
-      <circle cx="74" cy="82" r="4" fill={skin.ink} />
-      <circle cx="98" cy="82" r="4" fill={skin.ink} />
+      <polygon
+        points="86,42 89,49 96,49 90,54 92,61 86,57 80,61 82,54 76,49 83,49"
+        fill={skin.heroEmblem}
+      />
+      <circle cx="74" cy="82" r="4" fill="#1c2430" />
+      <circle cx="98" cy="82" r="4" fill="#1c2430" />
       <circle cx="75.5" cy="80.5" r="1.4" fill="#fff" />
       <circle cx="99.5" cy="80.5" r="1.4" fill="#fff" />
-      <path d="M74 94c6 6 16 6 22 0" stroke={skin.ink} strokeWidth="2.4" fill="none" strokeLinecap="round" />
+      <path d="M74 94c6 6 16 6 22 0" stroke="#1c2430" strokeWidth="2.4" fill="none" strokeLinecap="round" />
       <circle cx="66" cy="92" r="4" fill="#ff8fab" opacity="0.8" />
       <circle cx="106" cy="92" r="4" fill="#ff8fab" opacity="0.8" />
-      <Arm pose={skin.pose} firing={firing} skin={skin} />
+      <Arm firing={firing} skin={skin} />
     </svg>
   );
 }
 
-function Emblem({ pose, fill, trim }: { pose: Skin["pose"]; fill: string; trim: string }) {
-  if (pose === "leaf") {
-    return <ellipse cx="86" cy="52" rx="6" ry="10" fill={fill} transform="rotate(-28 86 52)" />;
-  }
-  if (pose === "moon") {
-    return (
-      <g>
-        <circle cx="86" cy="52" r="9" fill={fill} />
-        <circle cx="90" cy="49" r="7" fill={trim} />
-      </g>
-    );
-  }
-  return (
-    <polygon
-      points="86,42 89,49 96,49 90,54 92,61 86,57 80,61 82,54 76,49 83,49"
-      fill={fill}
-    />
-  );
-}
-
-function Arm({ pose, firing, skin }: { pose: Skin["pose"]; firing: boolean; skin: Skin }) {
-  const star = firing ? "M108 124 C132 120 148 116 156 112" : "M108 128 C126 122 136 108 140 96";
-  const leaf = "M108 118 C126 96 140 78 150 62";
-  const moon = "M104 136 C126 146 142 150 156 146";
-  const d = pose === "leaf" ? leaf : pose === "moon" ? moon : star;
-  const hand = pose === "leaf" ? [150, 62] : pose === "moon" ? [156, 146] : firing ? [156, 112] : [140, 96];
+function Arm({ firing, skin }: { firing: boolean; skin: Skin }) {
+  const d = firing ? "M108 124 C132 120 148 116 156 112" : "M108 128 C126 122 136 108 140 96";
+  const hand = firing ? [156, 112] : [140, 96];
   return (
     <g>
       <path d={d} stroke={skin.heroBody} strokeWidth="10" fill="none" strokeLinecap="round" />

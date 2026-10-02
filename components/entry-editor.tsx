@@ -13,7 +13,8 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { drinkTitle } from "@/lib/stats";
+import { DEFAULT_BAIJIU_ML, isBaijiuMl, normalizeCount, normalizeMl } from "@/lib/quantity";
+import { drinkAmountText, drinkTitle } from "@/lib/stats";
 import { formatTime } from "@/lib/time";
 import type { DrinkType, Entry } from "@/lib/types";
 import { DRINK_TYPES } from "@/lib/types";
@@ -44,7 +45,10 @@ function EditorBody({ entry, onClose }: { entry: Entry; onClose: () => void }) {
     if (draft.kind === "drink") {
       const drinkLabel =
         draft.drinkType === "其他" ? draft.drinkLabel.trim().slice(0, 12) || "其他" : draft.drinkType;
-      saveEntry({ ...draft, drinkLabel, location: draft.location.trim().slice(0, 24) });
+      const next = { ...draft, drinkLabel, location: draft.location.trim().slice(0, 24) };
+      if (next.drinkType !== "白酒") delete next.unit;
+      else if (next.unit !== "ml") next.unit = "cup";
+      saveEntry(next);
     } else {
       saveEntry(draft);
     }
@@ -57,7 +61,14 @@ function EditorBody({ entry, onClose }: { entry: Entry; onClose: () => void }) {
         <DialogHeader>
           <DialogTitle>删掉这条？</DialogTitle>
           <DialogDescription>
-            {formatTime(draft.at)} 的{draft.kind === "smoke" ? "烟" : drinkTitle(draft)}
+            {formatTime(draft.at)} 的
+            {draft.kind === "drink" && drinkAmountText(draft)
+              ? `${drinkTitle(draft)} ${drinkAmountText(draft)}`
+              : draft.count > 1
+                ? `${draft.count} ${draft.kind === "smoke" ? "支烟" : `杯${drinkTitle(draft)}`}`
+                : draft.kind === "smoke"
+                  ? "烟"
+                  : drinkTitle(draft)}
             会从今天的数和月报里消失。
           </DialogDescription>
         </DialogHeader>
@@ -85,7 +96,19 @@ function EditorBody({ entry, onClose }: { entry: Entry; onClose: () => void }) {
   return (
     <>
       <DialogHeader>
-        <DialogTitle>{draft.kind === "smoke" ? "改这支烟" : "改这杯酒"}</DialogTitle>
+        <DialogTitle>
+          {draft.kind === "smoke"
+            ? draft.count > 1
+              ? `改这 ${draft.count} 支烟`
+              : "改这支烟"
+            : isBaijiuMl(draft)
+              ? `改用量 ${normalizeMl(draft.count)} 毫升`
+              : draft.drinkType === "白酒"
+                ? `改这 ${normalizeCount(draft.count)} 杯白酒`
+                : draft.count > 1
+                  ? `改这 ${draft.count} 杯酒`
+                  : "改这杯酒"}
+        </DialogTitle>
         <DialogDescription>{formatTime(draft.at)} 记下的。时间不动，心情和酒的信息可以改。</DialogDescription>
       </DialogHeader>
       <MoodPicker prefix="edit" label="心情" value={draft.mood} onChange={(mood) => setDraft({ ...draft, mood })} />
@@ -98,13 +121,34 @@ function EditorBody({ entry, onClose }: { entry: Entry; onClose: () => void }) {
                 type="button"
                 data-testid={`edit-drink-${type}`}
                 aria-pressed={draft.drinkType === type}
-                onClick={() =>
+                onClick={() => {
+                  const nextType = type as DrinkType;
+                  if (nextType === "白酒" && draft.drinkType !== "白酒") {
+                    setDraft({
+                      ...draft,
+                      drinkType: nextType,
+                      drinkLabel: nextType,
+                      unit: "ml",
+                      count: DEFAULT_BAIJIU_ML,
+                    });
+                    return;
+                  }
+                  if (nextType !== "白酒" && draft.unit === "ml") {
+                    setDraft({
+                      ...draft,
+                      drinkType: nextType,
+                      drinkLabel: nextType === "其他" ? "" : nextType,
+                      unit: "cup",
+                      count: 1,
+                    });
+                    return;
+                  }
                   setDraft({
                     ...draft,
-                    drinkType: type as DrinkType,
-                    drinkLabel: type === "其他" ? "" : type,
-                  })
-                }
+                    drinkType: nextType,
+                    drinkLabel: nextType === "其他" ? "" : nextType,
+                  });
+                }}
                 className={cn(
                   "h-10 rounded-2xl text-sm",
                   draft.drinkType === type
@@ -140,6 +184,10 @@ function EditorBody({ entry, onClose }: { entry: Entry; onClose: () => void }) {
               className="h-11! text-base"
             />
           </div>
+          {draft.drinkType === "白酒" && draft.unit !== "ml" ? (
+            <p className="text-sm">这条是按杯记下的，数字还是杯，没有改成毫升。</p>
+          ) : null}
+          {isBaijiuMl(draft) ? <p className="text-sm">用量 {normalizeMl(draft.count)} 毫升</p> : null}
         </div>
       )}
       <div className="flex gap-2">
