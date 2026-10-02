@@ -1,0 +1,4 @@
+picker {
+  display: block;
+  width: 100%;
+}

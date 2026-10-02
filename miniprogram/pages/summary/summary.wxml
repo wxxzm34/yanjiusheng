@@ -1,0 +1,54 @@
+<view class="wrap">
+  <view class="h1">汇总设置</view>
+  <view class="muted">到点后，微信发给你烟和酒的支数。</view>
+
+  <view class="card">
+    <view class="row">
+      <text>每日汇总</text>
+      <switch checked="{{daily}}" color="#ff5a36" bindchange="onDaily" />
+    </view>
+    <view class="row">
+      <text>每月汇总</text>
+      <switch checked="{{monthly}}" color="#ff5a36" bindchange="onMonthly" />
+    </view>
+    <view class="row">
+      <text>每年汇总</text>
+      <switch checked="{{yearly}}" color="#ff5a36" bindchange="onYearly" />
+    </view>
+  </view>
+
+  <view class="card">
+    <picker mode="time" value="{{timeValue}}" bindchange="onTime">
+      <view class="row">
+        <text>发送时间（北京时间）</text>
+        <text>{{timeValue}}</text>
+      </view>
+    </picker>
+    <view class="muted">每天、每月、每年都用这个时间。</view>
+    <picker wx:if="{{monthly}}" mode="selector" range="{{dayLabels}}" value="{{monthDay - 1}}" bindchange="onMonthDay">
+      <view class="row">
+        <text>每月几号</text>
+        <text>{{monthDay}}日</text>
+      </view>
+    </picker>
+    <picker wx:if="{{yearly}}" mode="selector" range="{{monthLabels}}" value="{{yearMonth - 1}}" bindchange="onYearMonth">
+      <view class="row">
+        <text>每年几月</text>
+        <text>{{yearMonth}}月</text>
+      </view>
+    </picker>
+    <picker wx:if="{{yearly}}" mode="selector" range="{{dayLabels}}" value="{{yearDay - 1}}" bindchange="onYearDay">
+      <view class="row">
+        <text>每年几号</text>
+        <text>{{yearDay}}日</text>
+      </view>
+    </picker>
+    <view class="muted" wx:if="{{monthly || yearly}}">没有这一天，就改到当月最后一天。</view>
+  </view>
+
+  <view class="card">
+    <view class="muted">微信每次点允许只能收到一条，想继续收要再点一次允许</view>
+    <button class="btn btn-line" bindtap="allowAgain">再允许一次</button>
+    <view class="muted" wx:if="{{status}}">{{status}}</view>
+  </view>
+</view>

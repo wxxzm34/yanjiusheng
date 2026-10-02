@@ -58,5 +58,6 @@
     </view>
   </view>
   <button class="btn btn-line" bindtap="shareToday">分享今天</button>
+  <button class="btn btn-line" bindtap="goSummary">汇总设置</button>
   <tab-bar current="home" />
 </view>
