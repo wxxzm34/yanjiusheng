@@ -2,7 +2,7 @@
 
 卡通小本本，记下每天的烟和酒。界面是中文的，语气轻松，不打分。
 
-数据只存在这台浏览器里（localStorage），没有账号，也没有服务器。第一次打开是空白的，想看报表长什么样可以点「试试示例」，再在装扮页清空。
+网页上的记录只存在这台浏览器里（localStorage），没有账号。微信里的定时汇总需要一台一直开着的服务器，见下文。第一次打开是空白的，想看报表长什么样可以点「试试示例」，再在装扮页清空。
 
 ## 本地运行
 
@@ -24,11 +24,63 @@ npm run dev
 - 分享：今天、这个月或这一年。可以复制文字；浏览器允许时走系统分享；也可以把卡通卡片存成图片。卡片上的心情也是三种颜色。
 - 装扮：三套，冷酷风、快乐风格、癫狂时刻。快乐风格一开始就能用，另外两套点「下载」后保存在本地，再点「使用」。颜色和背景一起换。
 
+网页首页有一句：微信汇总在小程序里设置。
+
 ## 微信小程序
 
-`miniprogram/` 是同一套流程的原生小程序（记烟、记酒、心情、地点、月报年报、复制分享文字、装扮）。
+`miniprogram/` 是同一套流程的原生小程序（记烟、记酒、心情、地点、月报年报、转发给朋友、分享到朋友圈、复制文字、装扮、汇总设置）。
 
 用微信开发者工具打开 `miniprogram` 目录即可。`project.config.json` 里的 AppID 是 `wx94d34aa79fba0a6f`。这个环境里跑不了小程序运行时，网页版是完整体验。
+
+### 转发给朋友、分享到朋友圈
+
+右上角菜单要能转发，页面里必须有转发函数。以前的「分享今天」只是把文字复制到剪贴板，所以菜单里没有「转发给朋友」，也没有「分享到朋友圈」。
+
+现在首页、报告、记录、记酒、装扮这些页面都会打开这两个菜单。转发标题是这段的烟和酒：烟按支，酒按杯，白酒另写毫升，不会把毫升当成杯。页面上的「复制今天的文字」仍然只复制，不代替转发。
+
+分享到朋友圈从基础库 2.11.3 起支持。iOS 需要微信 8.0.24 及以上。朋友圈里打开是单页，看不到底部导航，这是微信的限制。公众平台没有单独的「允许分享」开关要开。
+
+### 定时汇总
+
+首页点「汇总设置」。可以打开三个开关：一天小结（每天）、每月报告、每年报告。时间按北京时间，三个共用一个时间。默认 21:00。每月默认 31 日（没有 31 日就在当月最后一天），每年默认 12 月 31 日。
+
+到点后，如果还有剩余的允许次数，服务器给微信发一条订阅消息。烟是支数，酒是杯数，白酒毫升单独一个数字，不会写进杯数。一天小结只包括发出去的那一刻、今天已经记下的。想把晚上也算进去，把时间选晚一点。
+
+打开开关时会弹出微信的「允许」。微信每次点允许，通常只能收一条。想继续收，要点「再允许一次」。个人小程序没有长期订阅。同一分钟到了多条，会各发一条，每条用掉一次允许。
+
+手机不用开着。小程序打开时，以及每次保存记录时，会把烟和酒传到服务器。服务器用微信登录换到的 openid 认出是谁。
+
+网页收不到这条。
+
+这个仓库没有部署配置。数据写在服务器磁盘的 `data/wechat-users.json`，重启还在。要发出去，需要一直跑着 `npm run start`，进程每分钟自己检查一次。也可以另外用定时任务，每分钟访问一次：
+
+```bash
+curl -X POST -H "Authorization: Bearer 你的密钥" https://你的域名/api/cron/wechat-summary
+```
+
+换一台机器，或者用没有磁盘的托管，记录会丢，到点也发不出去。
+
+小程序里的网站地址写在 `miniprogram/config.js` 的 `apiBase`，例如 `https://你的域名`，末尾不要斜杠。真机要 https，并在微信公众平台把这个域名加进 request 合法域名。
+
+下面这些先空着也行。模板编号或 AppSecret 空着时，设置页仍能用，发送任务不会发微信，日志里会写原因。
+
+- `WECHAT_APPSECRET`：小程序 AppSecret，不要写进代码
+- `WECHAT_TEMPLATE_ID`：订阅消息模板 ID
+- `WECHAT_CRON_SECRET`：上面那个定时地址的密钥
+- `WECHAT_APPID`：可不填。不填就读 `miniprogram/project.config.json`，现在是 `wx94d34aa79fba0a6f`
+- `WECHAT_FIELD_PERIOD`、`WECHAT_FIELD_SMOKES`、`WECHAT_FIELD_DRINKS`、`WECHAT_FIELD_ML`：模板字段名。默认 `thing1`、`number2`、`number3`、`number4`。没有毫升那一栏时，把 `WECHAT_FIELD_ML` 设成 `off`，毫升不会被算进杯数，消息里也不出现毫升
+- `WECHAT_MINIPROGRAM_STATE`：开发版填 `developer`，体验版填 `trial`，正式版不用填
+
+申请模板时用一个模板、四个词，类型要对上：
+
+1. 时段（事物）：一天小结、本月汇总、今年汇总
+2. 烟（数字）：支数
+3. 酒（数字）：杯数，不含白酒毫升
+4. 白酒毫升（数字）
+
+开发者工具里可以先勾选不校验合法域名。没有 AppSecret 和模板 ID 时，发不到微信。
+
+本地可以跑 `npx tsx scripts/check-wechat-summary.ts`，检查毫升不会被算成杯，以及没配密钥时不会发送。
 
 ## Run locally
 
@@ -37,4 +89,4 @@ npm install
 npm run dev
 ```
 
-Open http://127.0.0.1:43123. The WeChat mini program lives in `miniprogram/` and opens with WeChat DevTools.
+Open http://127.0.0.1:43123. The WeChat mini program lives in `miniprogram/` and opens with WeChat DevTools. Sharing and scheduled summaries are set in the mini program; see the Chinese sections above.

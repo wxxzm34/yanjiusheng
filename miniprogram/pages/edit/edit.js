@@ -1,3 +1,4 @@
+const share = require("../../utils/share");
 const { load, save, DRINKS } = require("../../utils/storage");
 const { DEFAULT_BAIJIU_ML, isBaijiuMl, normalizeCount, normalizeMl } = require("../../utils/quantity");
 
@@ -31,6 +32,15 @@ Page({
     types: DRINKS,
     title: "",
     unitNote: "",
+  },
+  onShow() {
+    share.enableShare();
+  },
+  onShareAppMessage() {
+    return share.onShareAppMessage();
+  },
+  onShareTimeline() {
+    return share.onShareTimeline();
   },
   onLoad(query) {
     const data = load();

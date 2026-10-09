@@ -1,3 +1,4 @@
+const share = require("../../utils/share");
 const { load, save, uid, DRINKS, normalizeCount, canonicalMood } = require("../../utils/storage");
 const { DEFAULT_BAIJIU_ML, normalizeMl } = require("../../utils/quantity");
 const { paintChrome } = require("../../utils/packs");
@@ -28,7 +29,14 @@ Page({
     this.setData(next);
   },
   onShow() {
+    share.enableShare();
     paintChrome(load());
+  },
+  onShareAppMessage() {
+    return share.onShareAppMessage();
+  },
+  onShareTimeline() {
+    return share.onShareTimeline();
   },
   pickType(event) {
     const drinkType = event.currentTarget.dataset.type;

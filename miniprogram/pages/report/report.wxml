@@ -1,8 +1,12 @@
 <view class="wrap">
   <view class="row">
     <view class="h1">报告</view>
-    <button size="mini" bindtap="shareCurrent">分享</button>
+    <view class="chips">
+      <button size="mini" open-type="share">转发</button>
+      <button size="mini" bindtap="shareCurrent">复制文字</button>
+    </view>
   </view>
+  <view class="muted">右上角也可以转发这段，或分享到朋友圈。标题是这段的烟和酒，白酒按毫升。复制文字只进剪贴板。</view>
   <view class="chips ranges">
     <view
       wx:for="{{ranges}}"

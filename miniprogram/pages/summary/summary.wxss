@@ -1,0 +1,13 @@
+picker {
+  display: block;
+  width: 100%;
+}
+
+.switch-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.switch-copy .muted {
+  font-size: 24rpx;
+}

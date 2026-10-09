@@ -1,3 +1,4 @@
+const share = require("../../utils/share");
 const { load, save, uid, buildSample } = require("../../utils/storage");
 const { paintChrome, getSkin, getBackground, DEFAULT_OUTFIT_ID } = require("../../utils/packs");
 const { filterToday, summarize, shareText, formatTime, drinkTitle } = require("../../utils/stats");
@@ -48,7 +49,17 @@ Page({
     today: [],
   },
   onShow() {
+    share.enableShare();
     this.refresh();
+  },
+  onShareAppMessage() {
+    return share.onShareAppMessage();
+  },
+  onShareTimeline() {
+    return share.onShareTimeline();
+  },
+  goSummary() {
+    wx.navigateTo({ url: "/pages/summary/summary" });
   },
   onUnload() {
     if (this.timer) clearTimeout(this.timer);

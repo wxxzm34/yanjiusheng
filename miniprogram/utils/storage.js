@@ -77,6 +77,12 @@ function load() {
 
 function save(data) {
   wx.setStorageSync(KEY, data);
+  // 保存后上传烟和酒，供到点发送。失败也不影响手机里的记录。
+  try {
+    require("./sync").scheduleEntrySync();
+  } catch (error) {
+    // 上传模块没装上时，记录仍然留在手机里。
+  }
 }
 
 function stamp(dayOffset, hour, minute, now) {

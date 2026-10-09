@@ -1,3 +1,4 @@
+const share = require("../../utils/share");
 const { load, save } = require("../../utils/storage");
 const { paintChrome } = require("../../utils/packs");
 const { groupByDay } = require("../../utils/stats");
@@ -5,6 +6,7 @@ const { groupByDay } = require("../../utils/stats");
 Page({
   data: { groups: [] },
   onShow() {
+    share.enableShare();
     const data = load();
     paintChrome(data);
     this.setData({ groups: groupByDay(data.entries) });
@@ -38,5 +40,11 @@ Page({
         this.onShow();
       },
     });
+  },
+  onShareAppMessage() {
+    return share.onShareAppMessage();
+  },
+  onShareTimeline() {
+    return share.onShareTimeline();
   },
 });

@@ -1,3 +1,4 @@
+const share = require("../../utils/share");
 const echarts = require("../../ec-canvas/echarts");
 const { load } = require("../../utils/storage");
 const { paintChrome } = require("../../utils/packs");
@@ -65,7 +66,13 @@ Page({
     smokeEc: { lazyLoad: true },
     drinkEc: { lazyLoad: true },
   },
-  onLoad() {
+  onLoad(query) {
+    const range = query && query.range;
+    const known = ["month", "year", "d7", "d30"];
+    if (known.indexOf(range) >= 0) {
+      this.data.range = range;
+      this.setData({ range });
+    }
     this.entries = [];
     this.series = null;
     this.charts = {};
@@ -74,6 +81,7 @@ Page({
     this.viewReady = false;
   },
   onShow() {
+    share.enableShare();
     const data = load();
     paintChrome(data);
     this.entries = data.entries || [];
@@ -135,6 +143,27 @@ Page({
       if (done) done();
       return chart;
     });
+  },
+  shareCard() {
+    const now = new Date();
+    const range = this.data.range;
+    const known = { month: "本月", year: "本年", d7: "最近7天", d30: "最近30天" };
+    const label = known[range] || "这段";
+    const safeRange = known[range] ? range : "month";
+    const scoped = (this.entries || []).filter((entry) => entryInRange(entry, safeRange, now));
+    return share.card(
+      share.summaryTitle(label, summarize(scoped)),
+      `/pages/report/report?range=${safeRange}`,
+      `range=${safeRange}`,
+    );
+  },
+  onShareAppMessage() {
+    const item = this.shareCard();
+    return { title: item.title, path: item.path };
+  },
+  onShareTimeline() {
+    const item = this.shareCard();
+    return { title: item.title, query: item.query };
   },
   shareCurrent() {
     const now = new Date();

@@ -1,0 +1,64 @@
+<view class="wrap">
+  <view class="h1">汇总设置</view>
+  <view class="muted">到你选的时间，微信发一条汇总。烟按支，酒按杯，白酒按毫升，毫升不会写成杯。手机不用一直开着。</view>
+
+  <view class="card">
+    <view class="row">
+      <view class="switch-copy">
+        <view>一天小结</view>
+        <view class="muted">每天这个时间，发今天已经记下的烟和酒</view>
+      </view>
+      <switch checked="{{daily}}" color="#ff5a36" bindchange="onDaily" />
+    </view>
+    <view class="row">
+      <view class="switch-copy">
+        <view>每月报告</view>
+        <view class="muted">每月这一天，发本月到这时的汇总</view>
+      </view>
+      <switch checked="{{monthly}}" color="#ff5a36" bindchange="onMonthly" />
+    </view>
+    <view class="row">
+      <view class="switch-copy">
+        <view>每年报告</view>
+        <view class="muted">每年这一天，发今年到这时的汇总</view>
+      </view>
+      <switch checked="{{yearly}}" color="#ff5a36" bindchange="onYearly" />
+    </view>
+  </view>
+
+  <view class="card">
+    <picker mode="time" value="{{timeValue}}" bindchange="onTime">
+      <view class="row">
+        <text>发送时间（北京时间）</text>
+        <text>{{timeValue}}</text>
+      </view>
+    </picker>
+    <view class="muted">三个都用这个时间。想把晚上也算进一天小结，就把时间选晚一点。发出去之后才记下的，这次不会补发。</view>
+    <picker wx:if="{{monthly}}" mode="selector" range="{{dayLabels}}" value="{{monthDay - 1}}" bindchange="onMonthDay">
+      <view class="row">
+        <text>每月几号</text>
+        <text>{{monthDay}}日</text>
+      </view>
+    </picker>
+    <picker wx:if="{{yearly}}" mode="selector" range="{{monthLabels}}" value="{{yearMonth - 1}}" bindchange="onYearMonth">
+      <view class="row">
+        <text>每年几月</text>
+        <text>{{yearMonth}}月</text>
+      </view>
+    </picker>
+    <picker wx:if="{{yearly}}" mode="selector" range="{{dayLabels}}" value="{{yearDay - 1}}" bindchange="onYearDay">
+      <view class="row">
+        <text>每年几号</text>
+        <text>{{yearDay}}日</text>
+      </view>
+    </picker>
+    <view class="muted" wx:if="{{monthly || yearly}}">选 31 日时，没有 31 日的月份会在最后一天发。</view>
+  </view>
+
+  <view class="card">
+    <view class="muted">微信每次点允许，通常只能收一条。想继续收，要再点一次允许。个人小程序没有长期订阅，点一次不会一直收。</view>
+    <view class="muted">同一分钟如果一天小结和每月报告都到了，会各发一条，每条用掉一次允许。</view>
+    <button class="btn btn-line" bindtap="allowAgain">再允许一次</button>
+    <view class="muted" wx:if="{{status}}">{{status}}</view>
+  </view>
+</view>
