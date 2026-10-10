@@ -1,3 +1,4 @@
+const share = require("../../utils/share");
 const { load, save, buildSample } = require("../../utils/storage");
 const { OUTFITS, getSkin, getBackground, paintChrome, DEFAULT_OUTFIT_ID } = require("../../utils/packs");
 
@@ -9,7 +10,14 @@ Page({
     pendingId: "",
   },
   onShow() {
+    share.enableShare();
     this.paint();
+  },
+  onShareAppMessage() {
+    return share.onShareAppMessage();
+  },
+  onShareTimeline() {
+    return share.onShareTimeline();
   },
   paint() {
     const data = load();

@@ -112,3 +112,8 @@
   background: #1c1416;
   color: #f3e8e6;
 }
+
+.share-note {
+  margin-top: 12rpx;
+  font-size: 24rpx;
+}
