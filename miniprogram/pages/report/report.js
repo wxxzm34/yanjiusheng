@@ -2,7 +2,7 @@ const share = require("../../utils/share");
 const echarts = require("../../ec-canvas/echarts");
 const { load } = require("../../utils/storage");
 const { paintChrome } = require("../../utils/packs");
-const { summarize, shareText } = require("../../utils/stats");
+const { summarize } = require("../../utils/stats");
 const { MOODS, MOOD_COLORS, UNSET_MOOD_COLOR } = require("../../utils/quantity");
 const {
   rangeSeries,
@@ -29,15 +29,6 @@ function moodView(entries, range, now) {
     empty: total === 0,
     line: items.length ? items.map((item) => `${item.key} ${item.count}`).join(" · ") : "这段还没有心情",
   };
-}
-
-function shareTitle(range, now) {
-  const year = now.getFullYear();
-  const month = now.getMonth() + 1;
-  if (range === "year") return `${year}年`;
-  if (range === "month") return `${year}年${month}月`;
-  if (range === "d7") return "最近 7 天";
-  return "最近 30 天";
 }
 
 function mountChart(canvas, width, height, dpr, option) {
@@ -164,14 +155,5 @@ Page({
   onShareTimeline() {
     const item = this.shareCard();
     return { title: item.title, query: item.query };
-  },
-  shareCurrent() {
-    const now = new Date();
-    const scoped = (this.entries || []).filter((entry) => entryInRange(entry, this.data.range, now));
-    if (!scoped.length) {
-      wx.showToast({ title: "这段还是空的", icon: "none" });
-      return;
-    }
-    wx.setClipboardData({ data: shareText(shareTitle(this.data.range, now), summarize(scoped)) });
   },
 });

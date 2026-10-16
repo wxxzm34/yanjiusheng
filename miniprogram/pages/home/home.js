@@ -1,7 +1,7 @@
 const share = require("../../utils/share");
 const { load, save, uid, buildSample } = require("../../utils/storage");
 const { paintChrome, getSkin, getBackground, DEFAULT_OUTFIT_ID } = require("../../utils/packs");
-const { filterToday, summarize, shareText, formatTime, drinkTitle } = require("../../utils/stats");
+const { filterToday, summarize, formatTime, drinkTitle } = require("../../utils/stats");
 const { isBaijiuMl, clampQty, normalizeCount, normalizeMl, MAX_COUNT } = require("../../utils/quantity");
 
 const LASER_LINE = "「快乐加一，我代表山姆奥特曼消灭你生命0.5秒」";
@@ -209,16 +209,5 @@ Page({
       return;
     }
     run();
-  },
-  shareToday() {
-    const data = load();
-    const summary = summarize(filterToday(data.entries));
-    if (!summary.smokes && !summary.drinks && !summary.baijiuMl) {
-      wx.showToast({ title: "今天还是空的", icon: "none" });
-      return;
-    }
-    const now = new Date();
-    const title = `今天 · ${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日`;
-    wx.setClipboardData({ data: shareText(title, summary) });
   },
 });

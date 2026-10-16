@@ -59,7 +59,6 @@ export function ReportView() {
       <header className="paper-card mb-4 flex items-start justify-between gap-3 rounded-3xl px-4 py-3">
         <div>
           <h1 className="font-display text-4xl">报告</h1>
-          <p className="mt-1 text-sm opacity-80">打开就是这个月、这一年，不用再点生成。</p>
         </div>
         <Button type="button" className="h-10! rounded-full" data-testid="share-open-report" onClick={shareCurrent}>
           分享

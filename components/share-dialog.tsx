@@ -3,13 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useApp } from "@/components/app-provider";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { BackgroundPack, Skin } from "@/lib/packs";
 import { renderShareCard } from "@/lib/share-card";
@@ -24,7 +18,6 @@ export function ShareDialog() {
       <DialogContent className="max-h-[85dvh] overflow-y-auto sm:max-w-md">
         <DialogHeader>
           <DialogTitle>分享</DialogTitle>
-          <DialogDescription>复制文字一定能用。浏览器允许的话，也可以叫出系统分享或保存图片。</DialogDescription>
         </DialogHeader>
         {share && (
           <ShareBody
@@ -93,7 +86,6 @@ function ShareBody({
       {scoped.length === 0 ? (
         <div className="rounded-2xl bg-[var(--skin-soft)] p-4" data-testid="share-empty">
           <p className="font-display text-2xl">这段还是空的</p>
-          <p className="mt-1 text-sm leading-6">先记一笔，再来分享。也可以换到上面有记录的范围。</p>
         </div>
       ) : (
         <ReadyShare
@@ -110,7 +102,7 @@ function ShareBody({
       )}
       {scoped.length === 0 && (
         <Button type="button" className="h-11!" data-testid="share-copy" disabled>
-          复制文字
+          复制
         </Button>
       )}
     </>
@@ -236,7 +228,7 @@ function ReadyShare({
       )}
       <div className="grid gap-2">
         <Button type="button" className="h-11!" data-testid="share-copy" onClick={copyText}>
-          复制文字
+          复制
         </Button>
         <Button
           type="button"
