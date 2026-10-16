@@ -58,9 +58,6 @@ Page({
   onShareTimeline() {
     return share.onShareTimeline();
   },
-  goSummary() {
-    wx.navigateTo({ url: "/pages/summary/summary" });
-  },
   onUnload() {
     if (this.timer) clearTimeout(this.timer);
   },

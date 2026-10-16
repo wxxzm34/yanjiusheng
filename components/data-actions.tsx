@@ -37,7 +37,7 @@ export function DataActions({
           data-testid="load-sample"
           onClick={requestSample}
         >
-          试试示例
+          试试
         </Button>
       )}
       {clear && (

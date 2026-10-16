@@ -13,7 +13,7 @@
   </view>
   <view class="card">
     <view>小本本</view>
-    <button class="btn btn-line" bindtap="sample">试试示例</button>
+    <button class="btn btn-line" bindtap="sample">试试</button>
     <button class="btn btn-line" bindtap="clearAll">清空记录</button>
   </view>
   <tab-bar current="shop" />

@@ -48,7 +48,7 @@
   <view class="card" wx:if="{{today.length === 0}}">
     <view class="h1" style="font-size: 40rpx;">今天还是空白的</view>
     <view class="muted">先选烟或酒，再点记录。</view>
-    <button class="btn btn-line" bindtap="loadSample">试试示例</button>
+    <button class="btn btn-line" bindtap="loadSample">试试</button>
   </view>
 
   <view class="card" wx:else>
@@ -59,7 +59,6 @@
   </view>
   <button class="btn btn-line" open-type="share">转发给朋友</button>
   <button class="btn btn-line" bindtap="shareToday">复制今天的文字</button>
-  <button class="btn btn-line" bindtap="goSummary">汇总设置</button>
   <view class="muted share-note">右上角可以转发给朋友，或分享到朋友圈。标题里是今天的烟和酒，白酒按毫升。复制按钮只复制文字。</view>
   <tab-bar current="home" />
 </view>

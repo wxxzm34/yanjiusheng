@@ -2,7 +2,7 @@
 
 卡通小本本，记下每天的烟和酒。界面是中文的，语气轻松，不打分。
 
-网页上的记录只存在这台浏览器里（localStorage），没有账号。微信里的定时汇总需要一台一直开着的服务器，见下文。第一次打开是空白的，想看报表长什么样可以点「试试示例」，再在装扮页清空。
+网页上的记录只存在这台浏览器里（localStorage），没有账号。第一次打开是空白的，想看报表长什么样可以点「试试」，再在装扮页清空。订阅推送的设置先从界面拿掉了，服务器代码还在，见下文。
 
 ## 本地运行
 
@@ -24,11 +24,9 @@ npm run dev
 - 分享：今天、这个月或这一年。可以复制文字；浏览器允许时走系统分享；也可以把卡通卡片存成图片。卡片上的心情也是三种颜色。
 - 装扮：三套，冷酷风、快乐风格、癫狂时刻。快乐风格一开始就能用，另外两套点「下载」后保存在本地，再点「使用」。颜色和背景一起换。
 
-网页首页有一句：微信汇总在小程序里设置。
-
 ## 微信小程序
 
-`miniprogram/` 是同一套流程的原生小程序（记烟、记酒、心情、地点、月报年报、转发给朋友、分享到朋友圈、复制文字、装扮、汇总设置）。
+`miniprogram/` 是同一套流程的原生小程序（记烟、记酒、心情、地点、月报年报、转发给朋友、分享到朋友圈、复制文字、装扮）。
 
 用微信开发者工具打开 `miniprogram` 目录即可。`project.config.json` 里的 AppID 是 `wx94d34aa79fba0a6f`。这个环境里跑不了小程序运行时，网页版是完整体验。
 
@@ -42,7 +40,9 @@ npm run dev
 
 ### 定时汇总
 
-首页点「汇总设置」。可以打开三个开关：一天小结（每天）、每月报告、每年报告。时间按北京时间，三个共用一个时间。默认 21:00。每月默认 31 日（没有 31 日就在当月最后一天），每年默认 12 月 31 日。
+小程序和网页上暂时看不到汇总设置，也不会提示去开订阅。页面代码留在 `miniprogram/pages/summary`，只是没写进 `app.json`，首页也没有按钮。下面是以后加回来时，服务器怎么发。加回时，一天小结、每月报告、每年报告应各自选时间，不要再共用一个时刻。
+
+以前的页面可以打开三个开关：一天小结（每天）、每月报告、每年报告。时间按北京时间，三个共用一个时间。默认 21:00。每月默认 31 日（没有 31 日就在当月最后一天），每年默认 12 月 31 日。
 
 到点后，如果还有剩余的允许次数，服务器给微信发一条订阅消息。烟是支数，酒是杯数，白酒毫升单独一个数字，不会写进杯数。一天小结只包括发出去的那一刻、今天已经记下的。想把晚上也算进去，把时间选晚一点。
 
@@ -62,7 +62,7 @@ curl -X POST -H "Authorization: Bearer 你的密钥" https://你的域名/api/cr
 
 小程序里的网站地址写在 `miniprogram/config.js` 的 `apiBase`，例如 `https://你的域名`，末尾不要斜杠。真机要 https，并在微信公众平台把这个域名加进 request 合法域名。
 
-下面这些先空着也行。模板编号或 AppSecret 空着时，设置页仍能用，发送任务不会发微信，日志里会写原因。
+下面这些先空着也行。模板编号或 AppSecret 空着时，发送任务不会发微信，日志里会写原因。界面上现在没有设置页。
 
 - `WECHAT_APPSECRET`：小程序 AppSecret，不要写进代码
 - `WECHAT_TEMPLATE_ID`：订阅消息模板 ID
@@ -89,4 +89,4 @@ npm install
 npm run dev
 ```
 
-Open http://127.0.0.1:43123. The WeChat mini program lives in `miniprogram/` and opens with WeChat DevTools. Sharing and scheduled summaries are set in the mini program; see the Chinese sections above.
+Open http://127.0.0.1:43123. The WeChat mini program lives in `miniprogram/` and opens with WeChat DevTools. Sharing is in the mini program. The subscribe-summary screen is hidden for now; server code remains. See the Chinese sections above.
