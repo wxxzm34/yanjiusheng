@@ -50,7 +50,7 @@ Page({
         save(next);
         this.setData({ pendingId: "" });
         this.paint();
-        wx.showToast({ title: "下载好了", icon: "none" });
+        wx.showToast({ title: "可以用了", icon: "none" });
       }, 700);
       return;
     }

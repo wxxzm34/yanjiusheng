@@ -1,6 +1,6 @@
 <view class="wrap">
   <view class="h1">装扮</view>
-  <view class="muted">下载只存在这台手机里。正在用 {{skin.name}}</view>
+  <view class="muted">换一套会改颜色和背景。正在用 {{skin.name}}</view>
   <view class="card" wx:for="{{outfits}}" wx:key="id">
     <view class="preview" style="background: linear-gradient({{item.from}}, {{item.to}}); color: {{item.ink}};">
       <view class="swatch" style="background: {{item.accent}};"></view>
@@ -8,7 +8,7 @@
     </view>
     <view class="muted">{{item.blurb}}</view>
     <button class="btn btn-line" data-id="{{item.id}}" bindtap="act">
-      {{item.active ? '使用中' : item.unlocked ? '使用' : item.pending ? '下载中…' : '下载'}}
+      {{item.active ? '使用中' : item.unlocked ? '使用' : item.pending ? '稍等…' : '待使用'}}
     </button>
   </view>
   <tab-bar current="shop" />

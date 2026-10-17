@@ -14,9 +14,7 @@ export function ShopView() {
     <div className="px-4 pt-5">
       <header className="paper-card mb-4 rounded-3xl px-4 py-3">
         <h1 className="font-display text-4xl">装扮</h1>
-        <p className="mt-1 text-sm leading-6 opacity-80">
-          下载只存在这台手机里，不用付钱。换一套会同时改颜色和背景。
-        </p>
+        <p className="mt-1 text-sm leading-6 opacity-80">换一套会同时改颜色和背景。不用付钱。</p>
         <p className="mt-2 text-xs opacity-70" data-testid="shop-active">
           正在用 {skin.name}
         </p>
@@ -75,7 +73,7 @@ function PackButton({
   if (!unlocked) {
     return (
       <Button type="button" className="h-10! w-full" data-testid={`pack-action-${id}`} disabled={pending} onClick={onDownload}>
-        {pending ? "下载中…" : "下载"}
+        {pending ? "稍等…" : "待使用"}
       </Button>
     );
   }

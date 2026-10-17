@@ -304,19 +304,37 @@ function MoodMix({ summary }: { summary: ReturnType<typeof summarize> }) {
   );
 }
 
+function SeriesLegend() {
+  return (
+    <div className="mt-2 flex gap-4 text-xs">
+      <span className="inline-flex items-center gap-1.5">
+        <span className="size-2.5 rounded-full bg-[var(--skin-accent)]" />
+        烟
+      </span>
+      <span className="inline-flex items-center gap-1.5">
+        <span className="size-2.5 rotate-45 bg-[#3c7d9e]" />
+        酒
+      </span>
+    </div>
+  );
+}
+
 function DayChart({ days }: { days: { day: number; smokes: number; drinks: number }[] }) {
   const max = Math.max(1, ...days.map((day) => Math.max(day.smokes, day.drinks)));
   return (
     <section className="paper-card rounded-3xl p-4" data-testid="day-chart">
       <h3 className="font-medium">按天</h3>
-      <p className="mt-1 text-xs opacity-70">柱子是烟，圆点是酒。</p>
+      <SeriesLegend />
       <div className="mt-3 flex h-28 items-end gap-px" role="img" aria-label="这个月每天的烟和酒">
         {days.map((day) => (
-          <div key={day.day} className="flex h-full flex-1 flex-col items-center justify-end" title={`${day.day}日 烟${day.smokes} 酒${day.drinks}`}>
-            {day.drinks > 0 && <span className="mb-0.5 size-1.5 rounded-full bg-[#e9c46a]" />}
+          <div key={day.day} className="flex h-full flex-1 items-end justify-center gap-0.5" title={`${day.day}日 烟${day.smokes} 酒${day.drinks}`}>
             <div
-              className="w-full rounded-t bg-[var(--skin-accent)]"
+              className="w-2/5 rounded-t bg-[var(--skin-accent)]"
               style={{ height: `${Math.max(day.smokes > 0 ? 8 : 0, (day.smokes / max) * 100)}%` }}
+            />
+            <div
+              className="w-2/5 rounded-t bg-[#3c7d9e]"
+              style={{ height: `${Math.max(day.drinks > 0 ? 8 : 0, (day.drinks / max) * 100)}%` }}
             />
           </div>
         ))}
@@ -336,16 +354,16 @@ function YearChart({ points }: { points: { month: number; smokes: number; drinks
   return (
     <section className="paper-card rounded-3xl p-4" data-testid="year-chart">
       <h3 className="font-medium">每月</h3>
-      <p className="mt-1 text-xs opacity-70">左柱是烟，右柱是酒。</p>
+      <SeriesLegend />
       <div className="mt-3 flex h-32 items-end gap-1" role="img" aria-label="这一年每个月的烟和酒">
         {points.map((point) => (
           <div key={point.month} className="flex flex-1 flex-col items-center gap-1">
-            <div className="flex h-24 w-full items-end gap-px">
+            <div className="flex h-24 w-full items-end justify-center gap-0.5">
               <div
-                className="flex-1 rounded-t bg-[var(--skin-accent)]"
+                className="w-2/5 rounded-t bg-[var(--skin-accent)]"
                 style={{ height: `${(point.smokes / max) * 100}%` }}
               />
-              <div className="flex-1 rounded-t bg-[#e9c46a]" style={{ height: `${(point.drinks / max) * 100}%` }} />
+              <div className="w-2/5 rounded-t bg-[#3c7d9e]" style={{ height: `${(point.drinks / max) * 100}%` }} />
             </div>
             <span className="text-[10px]">{point.month}</span>
           </div>
