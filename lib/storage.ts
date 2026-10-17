@@ -4,6 +4,12 @@ import type { AppData, DrinkEntry, DrinkType, Entry, SmokeEntry } from "@/lib/ty
 import { DRINK_TYPES } from "@/lib/types";
 
 export const STORAGE_KEY = "yanjiusheng.v1";
+export const NOTE_LIMIT = 80;
+
+export function cleanNote(value: unknown) {
+  if (typeof value !== "string") return "";
+  return value.trim().slice(0, NOTE_LIMIT);
+}
 
 const drinkSet = new Set<string>(DRINK_TYPES);
 const outfitIds = new Set(OUTFITS.map((outfit) => outfit.id));
@@ -31,9 +37,11 @@ function sanitizeEntry(value: unknown): Entry | null {
   if (typeof item.id !== "string" || !item.id) return null;
   if (typeof item.at !== "number" || !Number.isFinite(item.at)) return null;
   const mood = canonicalMood(item.mood);
+  const note = cleanNote(item.note);
   if (item.kind === "smoke") {
     const count = normalizeCount(item.count);
     const entry: SmokeEntry = { id: item.id, kind: "smoke", at: item.at, mood, count };
+    if (note) entry.note = note;
     return entry;
   }
   if (item.kind !== "drink") return null;
@@ -56,6 +64,7 @@ function sanitizeEntry(value: unknown): Entry | null {
     count: volume ? normalizeMl(item.count) : normalizeCount(item.count),
   };
   if (drinkType === "白酒") entry.unit = volume ? "ml" : "cup";
+  if (note) entry.note = note;
   return entry;
 }
 

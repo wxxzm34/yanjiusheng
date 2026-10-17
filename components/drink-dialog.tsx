@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { MoodNote } from "@/components/mood-note";
 import { MoodPicker } from "@/components/mood-picker";
 import { QuantityStepper } from "@/components/quantity-stepper";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ import { cn } from "cn";
 export function DrinkDialog({
   open,
   draftMood,
+  draftNote = "",
   initialCount = 1,
   recentLocations,
   onOpenChange,
@@ -28,11 +30,13 @@ export function DrinkDialog({
 }: {
   open: boolean;
   draftMood: Mood | null;
+  draftNote?: string;
   initialCount?: number;
   recentLocations: string[];
   onOpenChange: (open: boolean) => void;
   onSave: (input: {
     mood: Mood | null;
+    note?: string;
     drinkType: DrinkType;
     drinkLabel: string;
     location: string;
@@ -46,6 +50,7 @@ export function DrinkDialog({
         {open && (
           <DrinkForm
             draftMood={draftMood}
+            draftNote={draftNote}
             initialCount={initialCount}
             recentLocations={recentLocations}
             onSave={(input) => {
@@ -61,15 +66,18 @@ export function DrinkDialog({
 
 function DrinkForm({
   draftMood,
+  draftNote,
   initialCount,
   recentLocations,
   onSave,
 }: {
   draftMood: Mood | null;
+  draftNote: string;
   initialCount: number;
   recentLocations: string[];
   onSave: (input: {
     mood: Mood | null;
+    note?: string;
     drinkType: DrinkType;
     drinkLabel: string;
     location: string;
@@ -89,6 +97,7 @@ function DrinkForm({
   const [drinkLabel, setDrinkLabel] = useState("");
   const [location, setLocation] = useState("");
   const [mood, setMood] = useState<Mood | null>(draftMood);
+  const [note, setNote] = useState(draftNote);
 
   return (
     <>
@@ -104,6 +113,7 @@ function DrinkForm({
           event.preventDefault();
           onSave({
             mood,
+            note,
             drinkType,
             drinkLabel,
             location,
@@ -146,6 +156,7 @@ function DrinkForm({
           </div>
         )}
         <MoodPicker prefix="drink" label={volume ? "心情" : "这杯的心情"} value={mood} onChange={setMood} />
+        <MoodNote value={note} onChange={setNote} testId="drink-note" />
         <div className="grid gap-2">
           <Label htmlFor="drink-location">在哪儿喝的</Label>
           <Input

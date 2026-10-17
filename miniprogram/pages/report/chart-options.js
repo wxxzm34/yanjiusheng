@@ -166,20 +166,27 @@ function valueAxis(name, color, values, showSplit) {
   return axis;
 }
 
-function lineSeries(name, color, data, yAxisIndex) {
+function lineSeries(name, color, data, yAxisIndex, mark) {
+  const crowded = data.length > 16;
   return {
     name,
     type: "line",
     yAxisIndex,
     data,
     smooth: false,
-    showSymbol: data.length <= 12,
-    symbol: "circle",
-    symbolSize: 6,
-    lineStyle: { width: 2, color },
-    itemStyle: { color },
+    showSymbol: !crowded,
+    symbol: mark.symbol,
+    symbolSize: crowded ? 4 : mark.size,
+    symbolOffset: mark.offset,
+    lineStyle: { width: 2, color, type: mark.dash ? "dashed" : "solid" },
+    itemStyle: { color, borderColor: "#fffaf6", borderWidth: 1.5 },
   };
 }
+
+const SMOKE_MARK = { symbol: "circle", size: 8, offset: [0, 0], dash: false };
+const DRINK_MARK = { symbol: "diamond", size: 9, offset: [0, 0], dash: false };
+const SMOKE_PAIR = { symbol: "circle", size: 8, offset: [0, -8], dash: false };
+const DRINK_PAIR = { symbol: "diamond", size: 9, offset: [0, 8], dash: true };
 
 function baseOption() {
   return {
@@ -200,9 +207,12 @@ function dayLineOption(series) {
       top: 0,
       right: 0,
       itemWidth: 14,
-      itemHeight: 8,
+      itemHeight: 10,
       textStyle: { color: INK, fontSize: 11 },
-      data: ["香烟", "酒"],
+      data: [
+        { name: "香烟", icon: "circle" },
+        { name: "酒", icon: "diamond" },
+      ],
     },
     xAxis: categoryAxis(series.labels),
     yAxis: [
@@ -210,13 +220,13 @@ function dayLineOption(series) {
       valueAxis("酒 (两/杯)", DRINK, series.drinks, false),
     ],
     series: [
-      lineSeries("香烟", SMOKE, series.smokes, 0),
-      lineSeries("酒", DRINK, series.drinks, 1),
+      lineSeries("香烟", SMOKE, series.smokes, 0, SMOKE_PAIR),
+      lineSeries("酒", DRINK, series.drinks, 1, DRINK_PAIR),
     ],
   });
 }
 
-function singleLineOption(title, name, color, labels, data) {
+function singleLineOption(title, name, color, labels, data, mark) {
   return Object.assign(baseOption(), {
     color: [color],
     title: {
@@ -227,16 +237,16 @@ function singleLineOption(title, name, color, labels, data) {
     },
     xAxis: categoryAxis(labels),
     yAxis: valueAxis(name, color, data, true),
-    series: [lineSeries(title, color, data, 0)],
+    series: [lineSeries(title, color, data, 0, mark)],
   });
 }
 
 function yearSmokeOption(series) {
-  return singleLineOption("香烟", "根", SMOKE, series.labels, series.smokes);
+  return singleLineOption("香烟", "根", SMOKE, series.labels, series.smokes, SMOKE_MARK);
 }
 
 function yearDrinkOption(series) {
-  return singleLineOption("酒", "两/杯", DRINK, series.labels, series.drinks);
+  return singleLineOption("酒", "两/杯", DRINK, series.labels, series.drinks, DRINK_MARK);
 }
 
 module.exports = {

@@ -1,3 +1,6 @@
+// 暂时不挂进 app.json，首页也没有入口。订阅推送先不出现在界面上。
+// 以后加回时：把 pages/summary/summary 写回 app.json，并在首页放回按钮。
+// 一天小结、每月报告、每年报告应各自选时间，不要共用一个时刻。
 const share = require("../../utils/share");
 const { loadPrefs, writePrefs } = require("../../utils/subscribe");
 const { cachedTemplateId, fetchState, fetchTemplateId, hasServer, postSync } = require("../../utils/sync");

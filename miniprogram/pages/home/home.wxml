@@ -42,24 +42,25 @@
   <button class="btn record-wide" style="background: {{skin.accent}}; color: {{skin.onAccent || skin.paper}};" bindtap="record">记录</button>
   <view class="card">
     <mood-picker label="{{linkFresh ? '点一下改刚才记下的心情，下一笔也会带上' : '点一下，下一笔记下时带上'}}" value="{{draftMood}}" bind:change="onMood" />
+    <view class="note-label">心情感悟</view>
+    <textarea class="note" maxlength="80" placeholder="写一句，可以不写" value="{{draftNote}}" bindinput="onNote" auto-height />
     <view wx:if="{{linkFresh}}" class="link" bindtap="freezeMood">{{freshCount > 1 ? '刚才这几笔就这样' : '刚才那笔就这样'}}</view>
   </view>
 
   <view class="card" wx:if="{{today.length === 0}}">
     <view class="h1" style="font-size: 40rpx;">今天还是空白的</view>
     <view class="muted">先选烟或酒，再点记录。</view>
-    <button class="btn btn-line" bindtap="loadSample">试试示例</button>
+    <button class="btn btn-line" bindtap="loadSample">试试</button>
   </view>
 
   <view class="card" wx:else>
     <view class="row" wx:for="{{today}}" wx:key="id">
-      <text>{{item.timeText}} · {{item.title}}</text>
+      <view>
+        <text>{{item.timeText}} · {{item.title}}</text>
+        <view wx:if="{{item.note}}" class="muted">{{item.note}}</view>
+      </view>
       <text>{{item.moodText}}</text>
     </view>
   </view>
-  <button class="btn btn-line" open-type="share">转发给朋友</button>
-  <button class="btn btn-line" bindtap="shareToday">复制今天的文字</button>
-  <button class="btn btn-line" bindtap="goSummary">汇总设置</button>
-  <view class="muted share-note">右上角可以转发给朋友，或分享到朋友圈。标题里是今天的烟和酒，白酒按毫升。复制按钮只复制文字。</view>
   <tab-bar current="home" />
 </view>

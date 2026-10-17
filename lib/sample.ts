@@ -9,8 +9,17 @@ function at(dayOffset: number, hour: number, minute: number, now: number) {
   return date.getTime();
 }
 
-function smoke(dayOffset: number, hour: number, minute: number, mood: Mood | null, now: number): SmokeEntry {
-  return { id: createId(), kind: "smoke", at: at(dayOffset, hour, minute, now), mood, count: 1 };
+function smoke(
+  dayOffset: number,
+  hour: number,
+  minute: number,
+  mood: Mood | null,
+  now: number,
+  note?: string,
+): SmokeEntry {
+  const entry: SmokeEntry = { id: createId(), kind: "smoke", at: at(dayOffset, hour, minute, now), mood, count: 1 };
+  if (note) entry.note = note;
+  return entry;
 }
 
 function drink(
@@ -37,7 +46,7 @@ function drink(
 
 export function buildSample(now = Date.now()): Entry[] {
   return [
-    smoke(0, 9, 12, "平静", now),
+    smoke(0, 9, 12, "平静", now, "有点困"),
     smoke(0, 15, 40, "开心", now),
     drink(0, 19, 5, "开心", "啤酒", "阳台", now),
     smoke(1, 21, 18, "难过", now),

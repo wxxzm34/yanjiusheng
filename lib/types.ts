@@ -23,6 +23,8 @@ export type SmokeEntry = {
   kind: "smoke";
   at: number;
   mood: Mood | null;
+  /** 心情感悟，没有就不写。 */
+  note?: string;
   count: number;
 };
 
@@ -31,6 +33,8 @@ export type DrinkEntry = {
   kind: "drink";
   at: number;
   mood: Mood | null;
+  /** 心情感悟，没有就不写。 */
+  note?: string;
   drinkType: DrinkType;
   drinkLabel: string;
   location: string;

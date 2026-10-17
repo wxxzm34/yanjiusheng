@@ -1,5 +1,5 @@
 const share = require("../../utils/share");
-const { load, save, DRINKS } = require("../../utils/storage");
+const { load, save, DRINKS, cleanNote } = require("../../utils/storage");
 const { DEFAULT_BAIJIU_ML, isBaijiuMl, normalizeCount, normalizeMl } = require("../../utils/quantity");
 
 function heading(entry) {
@@ -26,6 +26,7 @@ Page({
     entry: null,
     timeText: "",
     mood: "",
+    moodNote: "",
     drinkType: "啤酒",
     drinkLabel: "",
     location: "",
@@ -54,6 +55,7 @@ Page({
       entry,
       timeText: formatTime(entry.at),
       mood: entry.mood || "",
+      moodNote: entry.note || "",
       drinkType: entry.drinkType || "啤酒",
       drinkLabel: entry.drinkType === "其他" ? entry.drinkLabel : "",
       location: entry.location || "",
@@ -63,6 +65,9 @@ Page({
   },
   onMood(event) {
     this.setData({ mood: event.detail.mood });
+  },
+  onNote(event) {
+    this.data.moodNote = event.detail.value || "";
   },
   pickType(event) {
     const drinkType = event.currentTarget.dataset.type;
@@ -93,7 +98,13 @@ Page({
     const data = load();
     data.entries = data.entries.map((entry) => {
       if (entry.id !== this.data.entry.id) return entry;
-      if (entry.kind === "smoke") return { ...entry, mood: this.data.mood || null };
+      const note = cleanNote(this.data.moodNote);
+      if (entry.kind === "smoke") {
+        const next = { ...entry, mood: this.data.mood || null };
+        if (note) next.note = note;
+        else delete next.note;
+        return next;
+      }
       const drinkType = this.data.drinkType;
       const next = {
         ...entry,
@@ -105,6 +116,8 @@ Page({
       };
       if (drinkType === "白酒") next.unit = this.data.entry.unit === "ml" ? "ml" : "cup";
       else delete next.unit;
+      if (note) next.note = note;
+      else delete next.note;
       return next;
     });
     save(data);

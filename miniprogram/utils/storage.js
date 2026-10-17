@@ -2,6 +2,12 @@ const { OUTFITS, DEFAULT_OUTFIT_ID } = require("./packs");
 const { MOODS, canonicalMood, normalizeCount, normalizeMl } = require("./quantity");
 
 const KEY = "yanjiusheng.v1";
+const NOTE_LIMIT = 80;
+
+function cleanNote(value) {
+  if (typeof value !== "string") return "";
+  return value.trim().slice(0, NOTE_LIMIT);
+}
 const DRINKS = ["红酒", "白酒", "啤酒", "家酿", "黄酒", "其他"];
 
 function defaultData() {
@@ -31,8 +37,11 @@ function sanitize(raw) {
   (raw.entries || []).forEach((item) => {
     if (!item || typeof item.id !== "string" || typeof item.at !== "number") return;
     const mood = canonicalMood(item.mood);
+    const note = cleanNote(item.note);
     if (item.kind === "smoke") {
-      entries.push({ id: item.id, kind: "smoke", at: item.at, mood, count: normalizeCount(item.count) });
+      const smoke = { id: item.id, kind: "smoke", at: item.at, mood, count: normalizeCount(item.count) };
+      if (note) smoke.note = note;
+      entries.push(smoke);
       return;
     }
     if (item.kind !== "drink" || DRINKS.indexOf(item.drinkType) < 0) return;
@@ -48,6 +57,7 @@ function sanitize(raw) {
       count: volume ? normalizeMl(item.count) : normalizeCount(item.count),
     };
     if (item.drinkType === "白酒") drink.unit = volume ? "ml" : "cup";
+    if (note) drink.note = note;
     entries.push(drink);
   });
   let activeSkinId = skinIds.has(raw.activeSkinId) ? raw.activeSkinId : base.activeSkinId;
@@ -95,13 +105,17 @@ function stamp(dayOffset, hour, minute, now) {
 
 function buildSample(now) {
   const base = now || Date.now();
-  const smoke = (day, hour, minute, mood) => ({
-    id: uid(),
-    kind: "smoke",
-    at: stamp(day, hour, minute, base),
-    mood,
-    count: 1,
-  });
+  const smoke = (day, hour, minute, mood, note) => {
+    const entry = {
+      id: uid(),
+      kind: "smoke",
+      at: stamp(day, hour, minute, base),
+      mood,
+      count: 1,
+    };
+    if (note) entry.note = note;
+    return entry;
+  };
   const drink = (day, hour, minute, mood, drinkType, location, label) => ({
     id: uid(),
     kind: "drink",
@@ -113,7 +127,7 @@ function buildSample(now) {
     count: 1,
   });
   return [
-    smoke(0, 9, 12, "平静"),
+    smoke(0, 9, 12, "平静", "有点困"),
     smoke(0, 15, 40, "开心"),
     drink(0, 19, 5, "开心", "啤酒", "阳台"),
     smoke(1, 21, 18, "难过"),
@@ -133,6 +147,7 @@ module.exports = {
   load,
   save,
   buildSample,
+  cleanNote,
   sanitize,
   canonicalMood,
   normalizeCount,

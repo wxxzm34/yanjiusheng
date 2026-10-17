@@ -3,10 +3,8 @@
 import { BackgroundScene } from "@/components/art/backgrounds";
 import { HeroFigure } from "@/components/art/figures";
 import { useApp } from "@/components/app-provider";
-import { DataActions } from "@/components/data-actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { OUTFITS } from "@/lib/packs";
 
 export function ShopView() {
@@ -16,9 +14,7 @@ export function ShopView() {
     <div className="px-4 pt-5">
       <header className="paper-card mb-4 rounded-3xl px-4 py-3">
         <h1 className="font-display text-4xl">装扮</h1>
-        <p className="mt-1 text-sm leading-6 opacity-80">
-          下载只存在这台手机里，不用付钱。换一套会同时改颜色和背景。
-        </p>
+        <p className="mt-1 text-sm leading-6 opacity-80">换一套会同时改颜色和背景。不用付钱。</p>
         <p className="mt-2 text-xs opacity-70" data-testid="shop-active">
           正在用 {skin.name}
         </p>
@@ -54,16 +50,6 @@ export function ShopView() {
           );
         })}
       </section>
-
-      <Separator className="my-5 bg-black/10" />
-
-      <section className="paper-card mb-4 rounded-3xl p-4">
-        <h2 className="font-medium">小本本</h2>
-        <p className="mt-1 text-sm leading-6 opacity-80">示例是假的几天，清空只删记录，装扮还在。</p>
-        <div className="mt-3">
-          <DataActions />
-        </div>
-      </section>
     </div>
   );
 }
@@ -87,7 +73,7 @@ function PackButton({
   if (!unlocked) {
     return (
       <Button type="button" className="h-10! w-full" data-testid={`pack-action-${id}`} disabled={pending} onClick={onDownload}>
-        {pending ? "下载中…" : "下载"}
+        {pending ? "稍等…" : "待使用"}
       </Button>
     );
   }

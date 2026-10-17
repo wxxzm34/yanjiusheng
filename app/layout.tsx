@@ -21,7 +21,7 @@ const body = Noto_Sans_SC({
 
 export const metadata: Metadata = {
   title: "烟酒生",
-  description: "卡通小本本，记下每天的烟和酒。",
+  description: "记下每天的烟和酒。",
   applicationName: "烟酒生",
 };
 

@@ -5,8 +5,7 @@
     "pages/history/history",
     "pages/edit/edit",
     "pages/report/report",
-    "pages/shop/shop",
-    "pages/summary/summary"
+    "pages/shop/shop"
   ],
   "window": {
     "navigationBarTitleText": "烟酒生",

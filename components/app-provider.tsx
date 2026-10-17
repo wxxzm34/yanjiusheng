@@ -4,7 +4,7 @@ import { createContext, useContext, useMemo, useState, useSyncExternalStore, typ
 import { DEFAULT_BG_ID, DEFAULT_SKIN_ID, getBackground, getOutfit, getSkin, type BackgroundPack, type Skin } from "@/lib/packs";
 import { buildSample } from "@/lib/sample";
 import { normalizeCount, normalizeMl } from "@/lib/quantity";
-import { STORAGE_KEY, createId, defaultData, loadData, persistData, sanitizeData } from "@/lib/storage";
+import { STORAGE_KEY, cleanNote, createId, defaultData, loadData, persistData, sanitizeData } from "@/lib/storage";
 import type { AppData, DrinkEntry, DrinkType, Entry, Mood, ShareTarget, SmokeEntry } from "@/lib/types";
 
 const CHANGE_EVENT = "yanjiusheng-change";
@@ -21,9 +21,10 @@ type AppContextValue = {
   pendingPackId: string | null;
   downloadPack: (id: string) => void;
   applyOutfit: (id: string) => void;
-  addSmoke: (mood: Mood | null, count?: number) => SmokeEntry;
+  addSmoke: (mood: Mood | null, count?: number, note?: string) => SmokeEntry;
   addDrink: (input: {
     mood: Mood | null;
+    note?: string;
     drinkType: DrinkType;
     drinkLabel: string;
     location: string;
@@ -149,7 +150,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
           return { ...prev, activeSkinId: id, activeBgId: id };
         });
       },
-      addSmoke: (mood: Mood | null, count = 1) => {
+      addSmoke: (mood: Mood | null, count = 1, note = "") => {
+        const text = cleanNote(note);
         const entry: SmokeEntry = {
           id: createId(),
           kind: "smoke",
@@ -157,6 +159,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           mood,
           count: normalizeCount(count),
         };
+        if (text) entry.note = text;
         commit((prev) => ({ ...prev, entries: [entry, ...prev.entries] }));
         return entry;
       },
@@ -164,6 +167,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         const label =
           input.drinkType === "其他" ? input.drinkLabel.trim().slice(0, 12) || "其他" : input.drinkType;
         const volume = input.drinkType === "白酒";
+        const text = cleanNote(input.note);
         const entry: DrinkEntry = {
           id: createId(),
           kind: "drink",
@@ -175,6 +179,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           count: volume ? normalizeMl(input.count) : normalizeCount(input.count),
           ...(volume ? { unit: "ml" as const } : {}),
         };
+        if (text) entry.note = text;
         commit((prev) => ({ ...prev, entries: [entry, ...prev.entries] }));
         return entry;
       },

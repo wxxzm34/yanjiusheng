@@ -13,6 +13,8 @@
   <input wx:if="{{drinkType === '其他'}}" class="field" placeholder="这杯叫什么" maxlength="12" value="{{drinkLabel}}" bindinput="onLabel" />
   <view class="card">
     <mood-picker label="{{drinkType === '白酒' ? '心情' : '这杯的心情'}}" value="{{mood}}" bind:change="onMood" />
+    <view class="note-label">心情感悟</view>
+    <textarea class="note" maxlength="80" placeholder="写一句，可以不写" value="{{moodNote}}" bindinput="onNote" auto-height />
   </view>
   <input class="field" placeholder="在哪儿喝的，可以不填" maxlength="24" value="{{location}}" bindinput="onLocation" />
   <view class="card qty-card">
