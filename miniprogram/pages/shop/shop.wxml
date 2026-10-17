@@ -11,10 +11,5 @@
       {{item.active ? '使用中' : item.unlocked ? '使用' : item.pending ? '下载中…' : '下载'}}
     </button>
   </view>
-  <view class="card">
-    <view>小本本</view>
-    <button class="btn btn-line" bindtap="sample">试试</button>
-    <button class="btn btn-line" bindtap="clearAll">清空记录</button>
-  </view>
   <tab-bar current="shop" />
 </view>

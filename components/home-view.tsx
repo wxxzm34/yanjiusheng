@@ -7,12 +7,14 @@ import { useApp } from "@/components/app-provider";
 import { DataActions } from "@/components/data-actions";
 import { DrinkDialog } from "@/components/drink-dialog";
 import { EntryEditor } from "@/components/entry-editor";
+import { MoodNote } from "@/components/mood-note";
 import { MoodPicker } from "@/components/mood-picker";
 import { QuantityStepper } from "@/components/quantity-stepper";
 import { Button } from "@/components/ui/button";
 import { MAX_COUNT, clampQty, isBaijiuMl, normalizeCount, normalizeMl } from "@/lib/quantity";
 import { drinkAmountText, drinkTitle } from "@/lib/stats";
 import { currentPeriod, formatTime, greeting } from "@/lib/time";
+import { cleanNote } from "@/lib/storage";
 import { startOfDay } from "@/lib/time";
 import type { Entry, Mood } from "@/lib/types";
 import { cn } from "cn";
@@ -30,6 +32,7 @@ function mixHex(hex: string, toward: "white" | "black", amount: number) {
 export function HomeView() {
   const app = useApp();
   const [draftMood, setDraftMood] = useState<Mood | null>(null);
+  const [draftNote, setDraftNote] = useState("");
   const [freshId, setFreshId] = useState<string | null>(null);
   const [freshCount, setFreshCount] = useState(1);
   const [kind, setKind] = useState<LogKind>("smoke");
@@ -73,9 +76,21 @@ export function HomeView() {
     if (fresh) app.saveEntry({ ...fresh, mood });
   }
 
+  function changeNote(value: string) {
+    setDraftNote(value);
+    if (!linked || !freshId) return;
+    const fresh = app.entries.find((entry) => entry.id === freshId);
+    if (!fresh) return;
+    const note = cleanNote(value);
+    const next = { ...fresh };
+    if (note) next.note = note;
+    else delete next.note;
+    app.saveEntry(next);
+  }
+
   function logSmoke(count: number) {
     const safe = normalizeCount(count);
-    const entry = app.addSmoke(draftMood, safe);
+    const entry = app.addSmoke(draftMood, safe, draftNote);
     setFreshId(entry.id);
     setFreshCount(safe);
     setLinkFresh(true);
@@ -199,6 +214,7 @@ export function HomeView() {
             onChange={pickMood}
             label={linked ? "点一下改刚才记下的心情，下一笔也会带上" : "点一下，下一笔记下时带上"}
           />
+          <MoodNote value={draftNote} onChange={changeNote} />
           {linked && (
             <button
               type="button"
@@ -240,16 +256,19 @@ export function HomeView() {
                       onClick={() => setEditing(entry)}
                       className="flex w-full items-center justify-between rounded-2xl bg-white/70 px-3 py-2 text-left text-sm text-[#2b2118]"
                     >
-                      <span>
-                        {formatTime(entry.at)} · {entry.kind === "smoke" ? "烟" : drinkTitle(entry)}
-                        {entry.kind === "drink" && drinkAmountText(entry)
-                          ? ` · ${drinkAmountText(entry)}`
-                          : entry.count > 1
-                            ? ` ×${entry.count}`
-                            : ""}
-                        {entry.kind === "drink" && entry.location ? ` · ${entry.location}` : ""}
+                      <span className="min-w-0">
+                        <span className="block">
+                          {formatTime(entry.at)} · {entry.kind === "smoke" ? "烟" : drinkTitle(entry)}
+                          {entry.kind === "drink" && drinkAmountText(entry)
+                            ? ` · ${drinkAmountText(entry)}`
+                            : entry.count > 1
+                              ? ` ×${entry.count}`
+                              : ""}
+                          {entry.kind === "drink" && entry.location ? ` · ${entry.location}` : ""}
+                        </span>
+                        {entry.note ? <span className="mt-1 block text-xs opacity-80">{entry.note}</span> : null}
                       </span>
-                      <span>{entry.mood ?? "未选"}</span>
+                      <span className="shrink-0">{entry.mood ?? "未选"}</span>
                     </button>
                   </li>
                 ))}
@@ -261,6 +280,7 @@ export function HomeView() {
       <DrinkDialog
         open={drinkOpen}
         draftMood={draftMood}
+        draftNote={draftNote}
         initialCount={Math.max(1, drinkShown)}
         recentLocations={recentLocations}
         onOpenChange={setDrinkOpen}
@@ -270,6 +290,7 @@ export function HomeView() {
           setFreshCount(entry.unit === "ml" ? 1 : entry.count);
           setLinkFresh(true);
           setDraftMood(entry.mood);
+          setDraftNote(entry.note || "");
           setDrinkQty("0");
           setNow(Date.now());
           setGag({

@@ -1,5 +1,5 @@
 const share = require("../../utils/share");
-const { load, save, uid, DRINKS, normalizeCount, canonicalMood } = require("../../utils/storage");
+const { load, save, uid, DRINKS, normalizeCount, canonicalMood, cleanNote } = require("../../utils/storage");
 const { DEFAULT_BAIJIU_ML, normalizeMl } = require("../../utils/quantity");
 const { paintChrome } = require("../../utils/packs");
 
@@ -18,6 +18,7 @@ Page({
     drinkLabel: "",
     location: "",
     mood: "",
+    moodNote: "",
     qty: "1",
   },
   onLoad(query) {
@@ -26,6 +27,8 @@ Page({
     this._cupQty = cups;
     const next = { qty: String(cups) };
     if (mood) next.mood = mood;
+    const note = cleanNote(query && query.note);
+    if (note) next.moodNote = note;
     this.setData(next);
   },
   onShow() {
@@ -54,6 +57,9 @@ Page({
   onMood(event) {
     this.setData({ mood: event.detail.mood });
   },
+  onNote(event) {
+    this.data.moodNote = event.detail.value || "";
+  },
   onQty(event) {
     this.setData({ qty: event.detail.value });
   },
@@ -64,7 +70,8 @@ Page({
     const count = volume ? normalizeMl(this.data.qty) : normalizeCount(this.data.qty);
     const drinkLabel = drinkType === "其他" ? (this.data.drinkLabel || "").trim().slice(0, 12) || "其他" : drinkType;
     const id = uid();
-    data.entries.unshift({
+    const note = cleanNote(this.data.moodNote);
+    const entry = {
       id,
       kind: "drink",
       at: Date.now(),
@@ -74,11 +81,15 @@ Page({
       location: (this.data.location || "").trim().slice(0, 24),
       count,
       ...(volume ? { unit: "ml" } : {}),
-    });
+    };
+    if (note) entry.note = note;
+    data.entries.unshift(entry);
     save(data);
     const pages = getCurrentPages();
     const prev = pages[pages.length - 2];
-    if (prev && prev.markDrinkSaved) prev.markDrinkSaved({ id, count: volume ? 1 : count, mood: this.data.mood || "" });
+    if (prev && prev.markDrinkSaved) {
+      prev.markDrinkSaved({ id, count: volume ? 1 : count, mood: this.data.mood || "", note });
+    }
     const line = drinkType === "其他" ? `这杯叫${drinkLabel}，先记下。` : LINES[drinkType];
     wx.showToast({ title: line, icon: "none", duration: 1800 });
     setTimeout(() => wx.navigateBack(), 400);

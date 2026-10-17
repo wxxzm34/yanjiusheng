@@ -42,6 +42,8 @@
   <button class="btn record-wide" style="background: {{skin.accent}}; color: {{skin.onAccent || skin.paper}};" bindtap="record">记录</button>
   <view class="card">
     <mood-picker label="{{linkFresh ? '点一下改刚才记下的心情，下一笔也会带上' : '点一下，下一笔记下时带上'}}" value="{{draftMood}}" bind:change="onMood" />
+    <view class="note-label">心情感悟</view>
+    <textarea class="note" maxlength="80" placeholder="写一句，可以不写" value="{{draftNote}}" bindinput="onNote" auto-height />
     <view wx:if="{{linkFresh}}" class="link" bindtap="freezeMood">{{freshCount > 1 ? '刚才这几笔就这样' : '刚才那笔就这样'}}</view>
   </view>
 
@@ -53,7 +55,10 @@
 
   <view class="card" wx:else>
     <view class="row" wx:for="{{today}}" wx:key="id">
-      <text>{{item.timeText}} · {{item.title}}</text>
+      <view>
+        <text>{{item.timeText}} · {{item.title}}</text>
+        <view wx:if="{{item.note}}" class="muted">{{item.note}}</view>
+      </view>
       <text>{{item.moodText}}</text>
     </view>
   </view>

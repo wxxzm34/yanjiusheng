@@ -3,10 +3,8 @@
 import { BackgroundScene } from "@/components/art/backgrounds";
 import { HeroFigure } from "@/components/art/figures";
 import { useApp } from "@/components/app-provider";
-import { DataActions } from "@/components/data-actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { OUTFITS } from "@/lib/packs";
 
 export function ShopView() {
@@ -53,16 +51,6 @@ export function ShopView() {
             </article>
           );
         })}
-      </section>
-
-      <Separator className="my-5 bg-black/10" />
-
-      <section className="paper-card mb-4 rounded-3xl p-4">
-        <h2 className="font-medium">小本本</h2>
-        <p className="mt-1 text-sm leading-6 opacity-80">示例是假的几天，清空只删记录，装扮还在。</p>
-        <div className="mt-3">
-          <DataActions />
-        </div>
       </section>
     </div>
   );

@@ -41,7 +41,7 @@ export function daysInMonth(year: number, month: number) {
 export function greeting(now = new Date()) {
   const hour = now.getHours();
   if (hour < 5) return "夜深了，醒着就轻轻记一笔";
-  if (hour < 11) return "早上好，小本本翻开了";
+  if (hour < 11) return "早上好，想记就记";
   if (hour < 14) return "中午好，想记就记";
   if (hour < 18) return "下午好，日子过到这儿了";
   return "晚上好，今天的形状快齐了";

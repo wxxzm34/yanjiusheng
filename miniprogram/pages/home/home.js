@@ -1,5 +1,5 @@
 const share = require("../../utils/share");
-const { load, save, uid, buildSample } = require("../../utils/storage");
+const { load, save, uid, buildSample, cleanNote } = require("../../utils/storage");
 const { paintChrome, getSkin, getBackground, DEFAULT_OUTFIT_ID } = require("../../utils/packs");
 const { filterToday, summarize, formatTime, drinkTitle } = require("../../utils/stats");
 const { isBaijiuMl, clampQty, normalizeCount, normalizeMl, MAX_COUNT } = require("../../utils/quantity");
@@ -21,7 +21,7 @@ function draftQty(value) {
 function greeting() {
   const hour = new Date().getHours();
   if (hour < 5) return "夜深了，醒着就轻轻记一笔";
-  if (hour < 11) return "早上好，小本本翻开了";
+  if (hour < 11) return "早上好，想记就记";
   if (hour < 14) return "中午好，想记就记";
   if (hour < 18) return "下午好";
   return "晚上好";
@@ -33,6 +33,7 @@ Page({
     skin: getSkin(DEFAULT_OUTFIT_ID),
     bg: getBackground(DEFAULT_OUTFIT_ID),
     draftMood: "",
+    draftNote: "",
     linkFresh: false,
     freshId: "",
     freshCount: 1,
@@ -78,6 +79,7 @@ Page({
         timeText: formatTime(entry.at),
         title,
         moodText: entry.mood || "未选",
+        note: cleanNote(entry.note),
       };
     });
     const summary = summarize(today);
@@ -93,6 +95,7 @@ Page({
           freshCount: pending.count,
           linkFresh: true,
           draftMood: pending.mood || this.data.draftMood,
+          draftNote: pending.note || "",
         }
       : {};
     this.setData({
@@ -122,6 +125,25 @@ Page({
     save(data);
     this.refresh();
     this.setData({ draftMood: mood, linkFresh: true, freshId: this.data.freshId });
+  },
+  onNote(event) {
+    const draftNote = event.detail.value || "";
+    this.data.draftNote = draftNote;
+    if (!this.data.linkFresh || !this.data.freshId) return;
+    const note = cleanNote(draftNote);
+    const data = load();
+    data.entries = data.entries.map((entry) => {
+      if (entry.id !== this.data.freshId) return entry;
+      const next = { ...entry };
+      if (note) next.note = note;
+      else delete next.note;
+      return next;
+    });
+    save(data);
+    const today = (this.data.today || []).map((item) =>
+      item.id === this.data.freshId ? { ...item, note } : item,
+    );
+    this.setData({ today });
   },
   selectSmoke() {
     this.setData({ selected: "smoke" });
@@ -159,6 +181,7 @@ Page({
   writeSmoke(count) {
     const safe = normalizeCount(count);
     const data = load();
+    const note = cleanNote(this.data.draftNote);
     const entry = {
       id: uid(),
       kind: "smoke",
@@ -166,6 +189,7 @@ Page({
       mood: this.data.draftMood || null,
       count: safe,
     };
+    if (note) entry.note = note;
     data.entries.unshift(entry);
     save(data);
     if (this.timer) clearTimeout(this.timer);
@@ -189,7 +213,9 @@ Page({
   },
   goDrink(qty) {
     const mood = this.data.draftMood ? `&mood=${encodeURIComponent(this.data.draftMood)}` : "";
-    wx.navigateTo({ url: `/pages/drink/drink?qty=${qty}${mood}` });
+    const note = cleanNote(this.data.draftNote);
+    const noteQuery = note ? `&note=${encodeURIComponent(note)}` : "";
+    wx.navigateTo({ url: `/pages/drink/drink?qty=${qty}${mood}${noteQuery}` });
   },
   loadSample() {
     const data = load();

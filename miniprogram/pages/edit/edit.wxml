@@ -4,6 +4,8 @@
   <view class="muted">{{timeText}} 记下的。时间不动。</view>
   <view class="card">
     <mood-picker label="心情" value="{{mood}}" bind:change="onMood" />
+    <view class="note-label">心情感悟</view>
+    <textarea class="note" maxlength="80" placeholder="写一句，可以不写" value="{{moodNote}}" bindinput="onNote" auto-height />
   </view>
   <block wx:if="{{entry.kind === 'drink'}}">
     <view class="chips" style="margin-top: 24rpx;">

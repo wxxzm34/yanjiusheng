@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { MoodNote } from "@/components/mood-note";
 import { MoodPicker } from "@/components/mood-picker";
 import { useApp } from "@/components/app-provider";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DEFAULT_BAIJIU_ML, isBaijiuMl, normalizeCount, normalizeMl } from "@/lib/quantity";
+import { cleanNote } from "@/lib/storage";
 import { drinkAmountText, drinkTitle } from "@/lib/stats";
 import { formatTime } from "@/lib/time";
 import type { DrinkType, Entry } from "@/lib/types";
@@ -42,15 +44,19 @@ function EditorBody({ entry, onClose }: { entry: Entry; onClose: () => void }) {
   const [confirming, setConfirming] = useState(false);
 
   function save() {
-    if (draft.kind === "drink") {
+    const note = cleanNote(draft.note);
+    const base = { ...draft };
+    if (note) base.note = note;
+    else delete base.note;
+    if (base.kind === "drink") {
       const drinkLabel =
-        draft.drinkType === "其他" ? draft.drinkLabel.trim().slice(0, 12) || "其他" : draft.drinkType;
-      const next = { ...draft, drinkLabel, location: draft.location.trim().slice(0, 24) };
+        base.drinkType === "其他" ? base.drinkLabel.trim().slice(0, 12) || "其他" : base.drinkType;
+      const next = { ...base, drinkLabel, location: base.location.trim().slice(0, 24) };
       if (next.drinkType !== "白酒") delete next.unit;
       else if (next.unit !== "ml") next.unit = "cup";
       saveEntry(next);
     } else {
-      saveEntry(draft);
+      saveEntry(base);
     }
     onClose();
   }
@@ -112,6 +118,11 @@ function EditorBody({ entry, onClose }: { entry: Entry; onClose: () => void }) {
         <DialogDescription>{formatTime(draft.at)} 记下的。时间不动，心情和酒的信息可以改。</DialogDescription>
       </DialogHeader>
       <MoodPicker prefix="edit" label="心情" value={draft.mood} onChange={(mood) => setDraft({ ...draft, mood })} />
+      <MoodNote
+        testId="edit-note"
+        value={draft.note || ""}
+        onChange={(note) => setDraft({ ...draft, note })}
+      />
       {draft.kind === "drink" && (
         <div className="grid gap-3">
           <div className="grid grid-cols-3 gap-2">

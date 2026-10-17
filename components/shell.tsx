@@ -33,7 +33,7 @@ export function Shell({ children }: { children: ReactNode }) {
     return (
       <Frame>
         <BootScreen
-          title="小本本打不开"
+          title="记录打不开"
           body="浏览器里的记录读失败了。可以再读一次，或者清空后重来。"
           actions={
             <div className="flex gap-2">
@@ -112,7 +112,7 @@ function Frame({ children }: { children: ReactNode }) {
 }
 
 function BootScreen({
-  title = "翻开小本本…",
+  title = "打开中…",
   body = "正在把今天的空白页铺好。",
   actions,
 }: {

@@ -85,6 +85,7 @@ export function HistoryView() {
                               ? `${entry.count} 支烟`
                               : "一支烟"}
                         </p>
+                        {entry.note ? <p className="mt-1 text-xs leading-5">{entry.note}</p> : null}
                       </button>
                       <Badge variant={entry.mood ? "secondary" : "outline"}>{entry.mood ?? "未选"}</Badge>
                       <Button type="button" variant="ghost" className="h-9! px-2" onClick={() => setEditing(entry)}>

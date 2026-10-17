@@ -65,6 +65,22 @@ page {
   border-color: transparent;
 }
 
+.note-label {
+  margin-top: 20rpx;
+  font-size: 26rpx;
+}
+
+.note {
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 12rpx;
+  min-height: 120rpx;
+  padding: 16rpx 20rpx;
+  border-radius: 24rpx;
+  background: #fff;
+  font-size: 28rpx;
+}
+
 .bubble {
   background: #fff;
   border-radius: 24rpx;

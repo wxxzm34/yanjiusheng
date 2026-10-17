@@ -12,6 +12,7 @@
         <view>
           <view>{{entry.timeText}} · {{entry.title}}</view>
           <view class="muted">{{entry.place}} · {{entry.moodText}}</view>
+          <view wx:if="{{entry.note}}" class="muted">{{entry.note}}</view>
         </view>
         <view class="ops">
           <text data-id="{{entry.id}}" bindtap="edit">改</text>
